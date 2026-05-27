@@ -30,6 +30,35 @@ const FACTS = [
   'KOREAN GRAND PRIX',
 ]
 
+function useLiveFacts(team: { short: string; color: string; spec: { topSpeed: number } }) {
+  const [season, setSeason] = useState('—')
+  const [next, setNext] = useState('—')
+  useEffect(() => {
+    const update = () => {
+      const now = new Date()
+      const target = new Date('2026-03-08T05:00:00Z')
+      const diff = target.getTime() - now.getTime()
+      if (diff > 0) {
+        const days = Math.floor(diff / 86400000)
+        setSeason(`F1 ${now.getUTCFullYear()} OFFSEASON`)
+        setNext(`NEXT RACE IN ${days} DAYS`)
+      } else {
+        setSeason(`F1 ${now.getUTCFullYear()} SEASON LIVE`)
+        setNext('GRID OPEN')
+      }
+    }
+    update()
+    const id = setInterval(update, 30000)
+    return () => clearInterval(id)
+  }, [])
+  return [
+    `WATCHING — ${team.short}`,
+    season,
+    next,
+    `TOP SPEED REF · ${team.spec.topSpeed} KM/H`,
+  ]
+}
+
 function Clock() {
   const [now, setNow] = useState(new Date())
   useEffect(() => {
@@ -91,6 +120,8 @@ export default function Landing() {
   // Activity for telemetry — mouse speed (normalised) decays naturally
   const activity = Math.min(1, m.speed / 2.5)
   const tele = useTelemetry(activity)
+  const liveFacts = useLiveFacts(team)
+  const allFacts = [...FACTS, ...liveFacts]
 
   // Update parallax ref from mouse position
   useEffect(() => {
@@ -622,7 +653,7 @@ export default function Landing() {
             className="marquee-track flex shrink-0 items-center gap-10 whitespace-nowrap font-mono text-[11px] tracking-[0.35em] text-white/55"
             style={{ animationDuration: `${40 / (1 + activity)}s` }}
           >
-            {[...FACTS, ...FACTS].map((f, i) => (
+            {[...allFacts, ...allFacts].map((f, i) => (
               <span key={i} className="flex items-center gap-10">
                 <span>{f}</span>
                 <span style={{ color: team.color }}>●</span>
