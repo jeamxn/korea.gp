@@ -614,7 +614,13 @@ export default function Landing() {
               KOREA<span style={{ color: team.color }}>.</span>GP
             </motion.div>
             <div className="mt-3 font-mono text-[10px] tracking-[0.4em] text-white/40">
-              STARTING ENGINES…
+              {loadPct < 5
+                ? 'WARMING UP…'
+                : loadPct < 60
+                  ? `LOADING ${TEAMS[0].name.toUpperCase()}`
+                  : loadPct < 95
+                    ? 'COMPILING SHADERS…'
+                    : 'GRID FORMATION'}
             </div>
             <div className="mt-5 h-px w-56 overflow-hidden bg-white/10">
               <motion.div
