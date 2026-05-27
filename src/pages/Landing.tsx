@@ -14,6 +14,7 @@ import { GForce } from '../components/GForce'
 import { HelpOverlay } from '../components/HelpOverlay'
 import { SpecCard } from '../components/SpecCard'
 import { RegsCountdown } from '../components/RegsCountdown'
+import { WhyDormant } from '../components/WhyDormant'
 
 const CarScene = lazy(() => import('../components/CarScene'))
 
@@ -414,6 +415,7 @@ export default function Landing() {
       >
         <WinnersTimeline />
         <SpecCard team={team} />
+        <WhyDormant color={team.color} />
       </motion.div>
 
       {/* RIGHT — Track map */}
