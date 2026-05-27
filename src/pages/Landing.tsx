@@ -56,7 +56,16 @@ function Clock() {
 }
 
 export default function Landing() {
-  const [teamIdx, setTeamIdx] = useState(0)
+  const [teamIdx, setTeamIdx] = useState(() => {
+    if (typeof window === 'undefined') return 0
+    try {
+      const stored = localStorage.getItem('koreaGp.teamId')
+      const idx = TEAMS.findIndex((t) => t.id === stored)
+      return idx >= 0 ? idx : 0
+    } catch {
+      return 0
+    }
+  })
   const [autoRotate, setAutoRotate] = useState(true)
   const [loaded, setLoaded] = useState(false)
   const [muted, setMutedState] = useState(true)
@@ -160,6 +169,15 @@ export default function Landing() {
     boostRef.current = 1.2
     boostSfx()
   }
+
+  // Persist team selection
+  useEffect(() => {
+    try {
+      localStorage.setItem('koreaGp.teamId', team.id)
+    } catch {
+      /* ignore */
+    }
+  }, [team.id])
 
   // Track which teams have been viewed
   useEffect(() => {
