@@ -16,7 +16,28 @@ import { Vector2 } from 'three'
 import type { Group } from 'three'
 import { TEAMS } from '../data/teams'
 
-TEAMS.forEach((t) => useGLTF.preload(t.glb))
+// Critical: preload only the first/active team's model.
+// The rest are lazy-loaded during browser idle time (see scheduleIdlePreload below)
+// so the initial paint isn't blocked by 4 unused 2-13MB GLBs.
+useGLTF.preload(TEAMS[0].glb)
+
+let _idleQueued = false
+function scheduleIdlePreload() {
+  if (_idleQueued || typeof window === 'undefined') return
+  _idleQueued = true
+  const run = () => {
+    for (let i = 1; i < TEAMS.length; i++) {
+      try {
+        useGLTF.preload(TEAMS[i].glb)
+      } catch {
+        /* ignore */
+      }
+    }
+  }
+  const ric = (window as unknown as { requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number }).requestIdleCallback
+  if (ric) ric(run, { timeout: 4000 })
+  else setTimeout(run, 2500)
+}
 
 function Car({
   url,
@@ -146,6 +167,11 @@ export default function CarScene({
     const t = setTimeout(() => onLoaded?.(), 350)
     return () => clearTimeout(t)
   }, [teamId, onLoaded])
+
+  // Once the first car is ready, prefetch the rest in idle time.
+  useEffect(() => {
+    scheduleIdlePreload()
+  }, [])
 
   const heavy = !reducedMotion && !lowPower
 
