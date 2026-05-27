@@ -12,6 +12,7 @@ import { TrackMap } from '../components/TrackMap'
 import { WinnersTimeline } from '../components/WinnersTimeline'
 import { GForce } from '../components/GForce'
 import { HelpOverlay } from '../components/HelpOverlay'
+import { SpecCard } from '../components/SpecCard'
 
 const CarScene = lazy(() => import('../components/CarScene'))
 
@@ -368,9 +369,10 @@ export default function Landing() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.4 }}
-        className="absolute bottom-32 left-8 z-20 hidden w-[18rem] md:left-14 md:block"
+        className="absolute bottom-32 left-8 z-20 hidden w-[18rem] space-y-2 md:left-14 md:block"
       >
         <WinnersTimeline />
+        <SpecCard team={team} />
       </motion.div>
 
       {/* RIGHT — Track map */}

@@ -8,6 +8,12 @@ export type Team = {
   driverLine: string
   baseScale: number
   baseY: number
+  spec: {
+    topSpeed: number // km/h
+    weight: number // kg (min car + driver)
+    powerUnit: string
+    chassis: string
+  }
 }
 
 const BASE = 'https://cdn.jsdelivr.net/gh/Moncito/f1-showroom-@main/public/models'
@@ -23,6 +29,12 @@ export const TEAMS: Team[] = [
     driverLine: 'LECLERC · HAMILTON',
     baseScale: 1.0,
     baseY: -0.55,
+    spec: {
+      topSpeed: 342,
+      weight: 798,
+      powerUnit: 'Ferrari 066/12',
+      chassis: 'SF-25',
+    },
   },
   {
     id: 'redbull',
@@ -34,6 +46,12 @@ export const TEAMS: Team[] = [
     driverLine: 'VERSTAPPEN · TSUNODA',
     baseScale: 1.05,
     baseY: -0.55,
+    spec: {
+      topSpeed: 345,
+      weight: 798,
+      powerUnit: 'Honda RBPT',
+      chassis: 'RB21',
+    },
   },
   {
     id: 'mercedes',
@@ -45,6 +63,12 @@ export const TEAMS: Team[] = [
     driverLine: 'RUSSELL · ANTONELLI',
     baseScale: 0.95,
     baseY: -0.55,
+    spec: {
+      topSpeed: 340,
+      weight: 798,
+      powerUnit: 'Mercedes M16',
+      chassis: 'W16',
+    },
   },
   {
     id: 'mclaren',
@@ -56,6 +80,12 @@ export const TEAMS: Team[] = [
     driverLine: 'NORRIS · PIASTRI',
     baseScale: 0.95,
     baseY: -0.55,
+    spec: {
+      topSpeed: 343,
+      weight: 798,
+      powerUnit: 'Mercedes M16',
+      chassis: 'MCL39',
+    },
   },
   {
     id: 'aston',
@@ -67,6 +97,12 @@ export const TEAMS: Team[] = [
     driverLine: 'ALONSO · STROLL',
     baseScale: 1.0,
     baseY: -0.55,
+    spec: {
+      topSpeed: 339,
+      weight: 798,
+      powerUnit: 'Mercedes M16',
+      chassis: 'AMR25',
+    },
   },
 ]
 
