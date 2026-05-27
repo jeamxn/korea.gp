@@ -12,7 +12,7 @@ const FACTS = [
   'SEBASTIAN VETTEL · 3 WINS',
   'FERNANDO ALONSO · 1 WIN',
   'DESIGN — HERMANN TILKE',
-  '대한민국 그랑프리',
+  'KOREAN GRAND PRIX',
 ]
 
 const STATS = [
@@ -80,11 +80,6 @@ export default function Landing() {
         ))}
       </div>
 
-      {/* Korean character watermark */}
-      <div className="pointer-events-none absolute -right-12 top-1/2 z-[2] -translate-y-1/2 select-none text-[38vw] font-black leading-none text-white/[0.03]">
-        韓
-      </div>
-
       {/* MEGA WORDMARK behind car */}
       <div className="pointer-events-none absolute inset-0 z-[3] flex flex-col items-center justify-center">
         <motion.h1
@@ -142,7 +137,7 @@ export default function Landing() {
         className="absolute left-1/2 top-24 z-20 flex -translate-x-1/2 items-center gap-3 font-mono text-[10px] tracking-[0.4em] text-white/40"
       >
         <span className="h-px w-8 bg-white/30" />
-        <span>FORMULA 1 · 大韓民國</span>
+        <span>FORMULA 1 · REPUBLIC OF KOREA</span>
         <span className="h-px w-8 bg-white/30" />
       </motion.div>
 
