@@ -5,7 +5,7 @@ import { TEAMS } from '../data/teams'
 import { useMouse } from '../hooks/useMouse'
 import { useTelemetry } from '../hooks/useTelemetry'
 import { useReducedMotion, useTabVisible, useIsMobile } from '../hooks/useEnvironment'
-import { engineRev, tick, boost as boostSfx, setMuted, isMuted } from '../lib/sfx'
+import { engineRev, tick, boost as boostSfx, setMuted } from '../lib/sfx'
 import CustomCursor from '../components/CustomCursor'
 import { TelemetryHUD } from '../components/TelemetryHUD'
 import { TrackMap } from '../components/TrackMap'
@@ -60,6 +60,9 @@ export default function Landing() {
   const [loaded, setLoaded] = useState(false)
   const [muted, setMutedState] = useState(true)
   const [keyHint, setKeyHint] = useState<string | null>(null)
+  const [seenTeams, setSeenTeams] = useState<Set<string>>(new Set([TEAMS[0].id]))
+  const [showFirstHint, setShowFirstHint] = useState(false)
+  const [allSeen, setAllSeen] = useState(false)
   const team = TEAMS[teamIdx]
 
   const reducedMotion = useReducedMotion()
@@ -151,10 +154,30 @@ export default function Landing() {
     boostSfx()
   }
 
-  // Sync muted on mount
+  // Track which teams have been viewed
   useEffect(() => {
-    setMuted(isMuted() || true)
-  }, [])
+    setSeenTeams((prev) => {
+      if (prev.has(team.id)) return prev
+      const next = new Set(prev)
+      next.add(team.id)
+      if (next.size === TEAMS.length && !allSeen) {
+        setAllSeen(true)
+        boostSfx()
+      }
+      return next
+    })
+  }, [team.id, allSeen])
+
+  // First-time hint after a few seconds of idle
+  useEffect(() => {
+    if (loaded && seenTeams.size === 1) {
+      const t = setTimeout(() => {
+        if (seenTeams.size === 1) setShowFirstHint(true)
+      }, 4500)
+      return () => clearTimeout(t)
+    }
+    if (seenTeams.size > 1) setShowFirstHint(false)
+  }, [loaded, seenTeams])
 
   return (
     <div
@@ -453,6 +476,50 @@ export default function Landing() {
             style={{ boxShadow: `0 0 24px ${team.color}40` }}
           >
             {keyHint}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* First-time hint */}
+      <AnimatePresence>
+        {showFirstHint && !isMobile && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4 }}
+            className="pointer-events-none absolute left-1/2 top-1/3 z-25 -translate-x-1/2 text-center"
+          >
+            <div
+              className="rounded-full border bg-black/70 px-4 py-1.5 font-mono text-[10px] tracking-[0.3em] backdrop-blur-md"
+              style={{ borderColor: team.color, color: team.color, boxShadow: `0 0 20px ${team.color}40` }}
+            >
+              ← → TO SWITCH TEAMS · CLICK CAR TO BOOST
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* All teams seen — celebration ribbon */}
+      <AnimatePresence>
+        {allSeen && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.92 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
+            className="pointer-events-none absolute left-1/2 top-44 z-25 -translate-x-1/2"
+          >
+            <div
+              className="rounded-sm border px-3 py-1.5 font-mono text-[10px] tracking-[0.3em] backdrop-blur-md"
+              style={{
+                borderColor: team.color,
+                color: team.color,
+                background: `${team.color}1a`,
+              }}
+            >
+              ALL TEAMS VIEWED · GRID COMPLETE
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
