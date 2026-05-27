@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useRef } from 'react'
+import { Suspense, useEffect, useRef, useState } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import {
   Environment,
@@ -165,6 +165,14 @@ export default function CarScene({
 }) {
   const team = TEAMS.find((t) => t.id === teamId) ?? TEAMS[0]
   const { progress, active } = useProgress()
+  const [postFxReady, setPostFxReady] = useState(false)
+
+  // Defer post-processing mount slightly so first paint / first car render isn't blocked
+  // by EffectComposer shader compilation.
+  useEffect(() => {
+    const t = setTimeout(() => setPostFxReady(true), 220)
+    return () => clearTimeout(t)
+  }, [])
 
   // Report progress upstream so the main overlay can show a real percentage
   useEffect(() => {
@@ -248,7 +256,7 @@ export default function CarScene({
         <Environment preset="city" environmentIntensity={0.55} />
       </Suspense>
 
-      {heavy && (
+      {heavy && postFxReady && (
         <EffectComposer>
           <Bloom luminanceThreshold={0.45} luminanceSmoothing={0.4} intensity={0.55} mipmapBlur />
           <ChromaticAberration
