@@ -13,6 +13,7 @@ import { WinnersTimeline } from '../components/WinnersTimeline'
 import { GForce } from '../components/GForce'
 import { HelpOverlay } from '../components/HelpOverlay'
 import { SpecCard } from '../components/SpecCard'
+import { RegsCountdown } from '../components/RegsCountdown'
 
 const CarScene = lazy(() => import('../components/CarScene'))
 
@@ -383,6 +384,7 @@ export default function Landing() {
         className="absolute right-8 top-1/2 z-20 hidden w-[20rem] -translate-y-1/2 space-y-2 md:right-14 md:block"
       >
         <TrackMap color={team.color} />
+        <RegsCountdown color={team.color} />
         <div className="flex justify-end">
           <GForce color={team.color} />
         </div>
