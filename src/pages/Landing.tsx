@@ -382,6 +382,9 @@ export default function Landing() {
       {/* Vignette */}
       <div className="pointer-events-none absolute inset-0 z-[5] bg-[radial-gradient(ellipse_at_50%_60%,transparent_0%,transparent_40%,rgba(0,0,0,0.7)_85%)]" />
 
+      {/* Film grain */}
+      <div className="film-grain z-[6]" />
+
       {/* HEADER */}
       <header className="absolute inset-x-0 top-0 z-20 flex items-center justify-between px-8 pt-6 md:px-14 md:pt-8">
         <div className="flex items-center gap-3">
