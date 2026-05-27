@@ -149,6 +149,7 @@ export default function CarScene({
   reducedMotion = false,
   lowPower = false,
   onLoaded,
+  onProgress,
 }: {
   teamId: string
   autoRotate?: boolean
@@ -160,13 +161,23 @@ export default function CarScene({
   reducedMotion?: boolean
   lowPower?: boolean
   onLoaded?: () => void
+  onProgress?: (pct: number) => void
 }) {
   const team = TEAMS.find((t) => t.id === teamId) ?? TEAMS[0]
+  const { progress, active } = useProgress()
+
+  // Report progress upstream so the main overlay can show a real percentage
+  useEffect(() => {
+    onProgress?.(progress)
+  }, [progress, onProgress])
 
   useEffect(() => {
-    const t = setTimeout(() => onLoaded?.(), 350)
-    return () => clearTimeout(t)
-  }, [teamId, onLoaded])
+    // Fire onLoaded only once the asset pipeline is idle and we've reached 100.
+    if (progress >= 100 && !active) {
+      const t = setTimeout(() => onLoaded?.(), 200)
+      return () => clearTimeout(t)
+    }
+  }, [progress, active, teamId, onLoaded])
 
   // Once the first car is ready, prefetch the rest in idle time.
   useEffect(() => {

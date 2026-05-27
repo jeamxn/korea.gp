@@ -101,6 +101,7 @@ export default function Landing() {
   })
   const [autoRotate, setAutoRotate] = useState(true)
   const [loaded, setLoaded] = useState(false)
+  const [loadPct, setLoadPct] = useState(0)
   const [muted, setMutedState] = useState(true)
   const [keyHint, setKeyHint] = useState<string | null>(null)
   const [seenTeams, setSeenTeams] = useState<Set<string>>(new Set([TEAMS[0].id]))
@@ -376,6 +377,7 @@ export default function Landing() {
             reducedMotion={reducedMotion}
             lowPower={isMobile}
             onLoaded={() => setLoaded(true)}
+            onProgress={(p) => setLoadPct(p)}
           />
         </Suspense>
       </div>
@@ -583,6 +585,17 @@ export default function Landing() {
             </motion.div>
             <div className="mt-3 font-mono text-[10px] tracking-[0.4em] text-white/40">
               STARTING ENGINES…
+            </div>
+            <div className="mt-5 h-px w-56 overflow-hidden bg-white/10">
+              <motion.div
+                className="h-full"
+                style={{ background: team.color }}
+                animate={{ width: `${Math.max(4, Math.round(loadPct))}%` }}
+                transition={{ duration: 0.35, ease: 'easeOut' }}
+              />
+            </div>
+            <div className="mt-2 font-mono text-[10px] tracking-[0.3em] text-white/30">
+              {Math.round(loadPct)}%
             </div>
           </motion.div>
         )}
