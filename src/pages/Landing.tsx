@@ -8,14 +8,22 @@ import { useReducedMotion, useTabVisible, useIsMobile } from '../hooks/useEnviro
 import { engineRev, tick, boost as boostSfx, setMuted } from '../lib/sfx'
 import CustomCursor from '../components/CustomCursor'
 import { TelemetryHUD } from '../components/TelemetryHUD'
-import { TrackMap } from '../components/TrackMap'
-import { WinnersTimeline } from '../components/WinnersTimeline'
-import { GForce } from '../components/GForce'
 import { HelpOverlay } from '../components/HelpOverlay'
-import { SpecCard } from '../components/SpecCard'
-import { RegsCountdown } from '../components/RegsCountdown'
-import { WhyDormant } from '../components/WhyDormant'
-import { AnalyticsPanel } from '../components/AnalyticsPanel'
+
+// Below-the-fold / chrome panels — lazy so they don't block the first paint.
+const TrackMap = lazy(() => import('../components/TrackMap').then((m) => ({ default: m.TrackMap })))
+const WinnersTimeline = lazy(() =>
+  import('../components/WinnersTimeline').then((m) => ({ default: m.WinnersTimeline })),
+)
+const GForce = lazy(() => import('../components/GForce').then((m) => ({ default: m.GForce })))
+const SpecCard = lazy(() => import('../components/SpecCard').then((m) => ({ default: m.SpecCard })))
+const RegsCountdown = lazy(() =>
+  import('../components/RegsCountdown').then((m) => ({ default: m.RegsCountdown })),
+)
+const WhyDormant = lazy(() => import('../components/WhyDormant').then((m) => ({ default: m.WhyDormant })))
+const AnalyticsPanel = lazy(() =>
+  import('../components/AnalyticsPanel').then((m) => ({ default: m.AnalyticsPanel })),
+)
 
 const CarScene = lazy(() => import('../components/CarScene'))
 
@@ -475,9 +483,11 @@ export default function Landing() {
         transition={{ delay: 1.4 }}
         className="absolute bottom-32 left-8 z-20 hidden w-[18rem] space-y-2 md:left-14 md:block"
       >
-        <WinnersTimeline />
-        <SpecCard team={team} />
-        <WhyDormant color={team.color} />
+        <Suspense fallback={null}>
+          <WinnersTimeline />
+          <SpecCard team={team} />
+          <WhyDormant color={team.color} />
+        </Suspense>
       </motion.div>
 
       {/* RIGHT — Track map */}
@@ -487,12 +497,14 @@ export default function Landing() {
         transition={{ delay: 1.5 }}
         className="absolute right-8 top-1/2 z-20 hidden w-[20rem] -translate-y-1/2 space-y-2 md:right-14 md:block"
       >
-        <TrackMap color={team.color} />
-        <AnalyticsPanel color={team.color} activity={activity} />
-        <RegsCountdown color={team.color} />
-        <div className="flex justify-end">
-          <GForce color={team.color} />
-        </div>
+        <Suspense fallback={null}>
+          <TrackMap color={team.color} />
+          <AnalyticsPanel color={team.color} activity={activity} />
+          <RegsCountdown color={team.color} />
+          <div className="flex justify-end">
+            <GForce color={team.color} />
+          </div>
+        </Suspense>
       </motion.div>
 
       {/* CENTER TAGLINE */}
