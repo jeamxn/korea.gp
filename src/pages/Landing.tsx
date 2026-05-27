@@ -8,7 +8,10 @@ import { useReducedMotion, useTabVisible, useIsMobile } from '../hooks/useEnviro
 import { engineRev, tick, boost as boostSfx, setMuted } from '../lib/sfx'
 import CustomCursor from '../components/CustomCursor'
 import { TelemetryHUD } from '../components/TelemetryHUD'
-import { HelpOverlay } from '../components/HelpOverlay'
+
+const HelpOverlay = lazy(() =>
+  import('../components/HelpOverlay').then((m) => ({ default: m.HelpOverlay })),
+)
 
 // Below-the-fold / chrome panels — lazy so they don't block the first paint.
 const TrackMap = lazy(() => import('../components/TrackMap').then((m) => ({ default: m.TrackMap })))
@@ -689,7 +692,9 @@ export default function Landing() {
         )}
       </AnimatePresence>
 
-      <HelpOverlay open={showHelp} onClose={() => setShowHelp(false)} color={team.color} />
+      <Suspense fallback={null}>
+        {showHelp && <HelpOverlay open={showHelp} onClose={() => setShowHelp(false)} color={team.color} />}
+      </Suspense>
 
       {/* MARQUEE */}
       <div className="absolute inset-x-0 bottom-0 z-20 border-t border-white/10 bg-black/70 backdrop-blur-sm">
