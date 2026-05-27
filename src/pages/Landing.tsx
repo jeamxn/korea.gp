@@ -260,6 +260,12 @@ export default function Landing() {
     >
       {!isMobile && <CustomCursor color={team.color} />}
 
+      {/* Screen reader landmark */}
+      <h1 className="sr-only">Korea Grand Prix — Interactive F1 Archive</h1>
+      <div className="sr-only" aria-live="polite" aria-atomic="true">
+        Now viewing {team.name}, drivers {team.driverLine}.
+      </div>
+
       {/* Background grid with parallax */}
       <motion.div
         className="pointer-events-none absolute inset-0 opacity-[0.06]"
@@ -314,9 +320,12 @@ export default function Landing() {
         }}
         transition={{ type: 'spring', stiffness: 40, damping: 18 }}
       >
-        <h1 className="font-['Bebas_Neue'] text-[28vw] leading-[0.82] tracking-tight text-white/[0.06] md:text-[20vw]">
+        <div
+          aria-hidden="true"
+          className="font-['Bebas_Neue'] text-[28vw] leading-[0.82] tracking-tight text-white/[0.06] md:text-[20vw]"
+        >
           KOREA
-        </h1>
+        </div>
       </motion.div>
 
       {/* 3D CAR */}

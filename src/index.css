@@ -57,3 +57,34 @@ body {
 
 /* Hide scrollbars on landing */
 ::-webkit-scrollbar { display: none; }
+
+/* Accessible focus rings — visible only for keyboard */
+button:focus-visible,
+a:focus-visible,
+[role='button']:focus-visible {
+  outline: 2px solid var(--accent, #CD2E3A);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Screen-reader only utility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Respect users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track,
+  .speed-line,
+  .ticker-dot {
+    animation: none !important;
+  }
+}
