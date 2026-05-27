@@ -23,6 +23,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
+    <!-- Critical: kick off the Ferrari GLB fetch in parallel with the JS bundle -->
+    <link rel="preload" as="fetch" href="https://cdn.jsdelivr.net/gh/Moncito/f1-showroom-@main/public/models/ferrari.glb" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700;900&family=Bebas+Neue&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <title>KOREA.GP — Formula 1 × Korea</title>
   </head>
