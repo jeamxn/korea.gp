@@ -25,6 +25,16 @@ let _idleQueued = false
 function scheduleIdlePreload() {
   if (_idleQueued || typeof window === 'undefined') return
   _idleQueued = true
+  // Respect Save-Data / prefers-reduced-data — don't burn mobile data on cars the
+  // user may never look at.
+  try {
+    const conn = (navigator as unknown as { connection?: { saveData?: boolean; effectiveType?: string } }).connection
+    if (conn?.saveData) return
+    if (conn?.effectiveType && /(^|-)2g$/i.test(conn.effectiveType)) return
+    if (window.matchMedia?.('(prefers-reduced-data: reduce)').matches) return
+  } catch {
+    /* ignore */
+  }
   const run = () => {
     for (let i = 1; i < TEAMS.length; i++) {
       try {
