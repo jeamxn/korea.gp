@@ -1,5 +1,5 @@
 import { Suspense, useEffect, useRef } from 'react'
-import { Canvas, useFrame } from '@react-three/fiber'
+import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import {
   Environment,
   useGLTF,
@@ -72,6 +72,27 @@ function Loader() {
   )
 }
 
+function IntroCamera({ enabled }: { enabled: boolean }) {
+  const { camera } = useThree()
+  const startRef = useRef<number | null>(null)
+  const fromZ = 9.2
+  const fromY = 2.4
+  const toZ = 5.0
+  const toY = 1.2
+  useFrame(() => {
+    if (!enabled) return
+    if (startRef.current == null) startRef.current = performance.now()
+    const elapsed = (performance.now() - startRef.current) / 1500
+    const t = Math.min(1, elapsed)
+    // ease-out cubic
+    const e = 1 - Math.pow(1 - t, 3)
+    camera.position.z = fromZ + (toZ - fromZ) * e
+    camera.position.y = fromY + (toY - fromY) * e
+    camera.lookAt(0, 0, 0)
+  })
+  return null
+}
+
 function Floor({ color }: { color: string }) {
   return (
     <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.55, 0]} receiveShadow>
@@ -132,10 +153,11 @@ export default function CarScene({
     <Canvas
       shadows={heavy}
       dpr={lowPower ? [1, 1.25] : [1, 2]}
-      camera={{ position: [3.8, 1.2, 5.0], fov: 32 }}
+      camera={{ position: [3.8, 2.4, 9.2], fov: 32 }}
       gl={{ antialias: !lowPower, alpha: true, powerPreference: lowPower ? 'low-power' : 'high-performance' }}
       style={{ background: 'transparent' }}
     >
+      <IntroCamera enabled={!reducedMotion} />
       <ambientLight intensity={0.22} />
       <spotLight
         position={[6, 9, 4]}
