@@ -1,6 +1,12 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { Suspense, lazy, useEffect, useState } from 'react'
+import { Suspense, lazy, useEffect, useRef, useState } from 'react'
+import { Volume2, VolumeX, Pause, Play, Maximize2 } from 'lucide-react'
 import { TEAMS } from '../data/teams'
+import { useMouse } from '../hooks/useMouse'
+import { useTelemetry } from '../hooks/useTelemetry'
+import { engineRev, tick, boost as boostSfx, setMuted, isMuted } from '../lib/sfx'
+import CustomCursor from '../components/CustomCursor'
+import { TelemetryHUD } from '../components/TelemetryHUD'
 
 const CarScene = lazy(() => import('../components/CarScene'))
 
@@ -48,24 +54,86 @@ export default function Landing() {
   const [teamIdx, setTeamIdx] = useState(0)
   const [autoRotate, setAutoRotate] = useState(true)
   const [loaded, setLoaded] = useState(false)
+  const [muted, setMutedState] = useState(true) // start muted so autoplay policy OK
   const team = TEAMS[teamIdx]
 
-  // Keyboard: arrow keys cycle teams, space toggles rotation
+  // refs passed into Canvas — avoids re-renders for animation values
+  const boostRef = useRef(0)
+  const parallaxRef = useRef({ x: 0, y: 0 })
+
+  const m = useMouse()
+  // Activity for telemetry — mouse speed (normalised) decays naturally
+  const activity = Math.min(1, m.speed / 2.5)
+  const tele = useTelemetry(activity)
+
+  // Update parallax ref from mouse position
+  useEffect(() => {
+    parallaxRef.current.x = (m.x - 0.5) * 2 // -1..1
+    parallaxRef.current.y = (m.y - 0.5) * 2
+  }, [m.x, m.y])
+
+  // Keyboard
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-        setTeamIdx((i) => (i + 1) % TEAMS.length)
+        next()
       } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-        setTeamIdx((i) => (i - 1 + TEAMS.length) % TEAMS.length)
+        prev()
       } else if (e.key === ' ') {
         e.preventDefault()
         setAutoRotate((v) => !v)
+        tick()
       } else if (/^[1-5]$/.test(e.key)) {
-        setTeamIdx(parseInt(e.key, 10) - 1)
+        const i = parseInt(e.key, 10) - 1
+        if (i !== teamIdx) {
+          setTeamIdx(i)
+          engineRev()
+        }
+      } else if (e.key === 'm' || e.key === 'M') {
+        toggleMute()
+      } else if (e.key === 'f' || e.key === 'F') {
+        toggleFullscreen()
+      } else if (e.key === 'r' || e.key === 'R') {
+        boostRef.current = 1.5
+        boostSfx()
       }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [teamIdx])
+
+  const next = () => {
+    setTeamIdx((i) => (i + 1) % TEAMS.length)
+    engineRev()
+  }
+  const prev = () => {
+    setTeamIdx((i) => (i - 1 + TEAMS.length) % TEAMS.length)
+    engineRev()
+  }
+  const pickTeam = (i: number) => {
+    if (i === teamIdx) return
+    setTeamIdx(i)
+    engineRev()
+  }
+  const toggleMute = () => {
+    const next = !muted
+    setMutedState(next)
+    setMuted(next)
+    if (!next) tick()
+  }
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) document.documentElement.requestFullscreen?.()
+    else document.exitFullscreen?.()
+  }
+  const handleStageClick = () => {
+    boostRef.current = 1.2
+    boostSfx()
+  }
+
+  // Sync muted on mount
+  useEffect(() => {
+    setMuted(isMuted() || true)
   }, [])
 
   return (
@@ -75,32 +143,40 @@ export default function Landing() {
         {
           '--accent': team.color,
           '--accent-rgb': team.colorRgb,
+          cursor: 'none',
         } as React.CSSProperties
       }
     >
-      {/* Background grid */}
-      <div
+      <CustomCursor color={team.color} />
+
+      {/* Background grid with parallax */}
+      <motion.div
         className="pointer-events-none absolute inset-0 opacity-[0.06]"
         style={{
           backgroundImage:
             'linear-gradient(to right, #fff 1px, transparent 1px), linear-gradient(to bottom, #fff 1px, transparent 1px)',
           backgroundSize: '80px 80px',
         }}
+        animate={{
+          x: (m.x - 0.5) * -16,
+          y: (m.y - 0.5) * -16,
+        }}
+        transition={{ type: 'spring', stiffness: 60, damping: 20 }}
       />
 
-      {/* Animated radial bloom that follows accent color */}
+      {/* Radial bloom */}
       <motion.div
         key={team.id + '-bloom'}
         initial={{ opacity: 0 }}
-        animate={{ opacity: 0.35 }}
+        animate={{ opacity: 0.4 }}
         transition={{ duration: 0.8 }}
         className="pointer-events-none absolute inset-0"
         style={{
-          background: `radial-gradient(ellipse at 50% 60%, rgba(${team.colorRgb},0.22) 0%, transparent 55%)`,
+          background: `radial-gradient(ellipse at ${m.x * 100}% ${m.y * 100}%, rgba(${team.colorRgb},0.22) 0%, transparent 55%)`,
         }}
       />
 
-      {/* Speed lines (color follows accent) */}
+      {/* Speed lines */}
       <div className="pointer-events-none absolute inset-0 z-[1]">
         {Array.from({ length: 9 }).map((_, i) => (
           <div
@@ -109,40 +185,48 @@ export default function Landing() {
             style={{
               top: `${8 + i * 10}%`,
               width: `${10 + (i % 3) * 6}rem`,
-              animationDuration: `${2.2 + (i % 3) * 0.6}s`,
+              animationDuration: `${(2.2 + (i % 3) * 0.6) / (1 + activity * 1.5)}s`,
               animationDelay: `${i * 0.35}s`,
-              opacity: 0.55,
+              opacity: 0.5 + activity * 0.5,
               background: `linear-gradient(to right, transparent, ${team.color}, transparent)`,
             }}
           />
         ))}
       </div>
 
-      {/* MEGA WORDMARK behind car */}
-      <div className="pointer-events-none absolute inset-0 z-[3] flex flex-col items-center justify-center">
-        <motion.h1
-          initial={{ opacity: 0, scale: 1.05 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1.4, ease: 'easeOut' }}
-          className="font-['Bebas_Neue'] text-[28vw] leading-[0.82] tracking-tight text-white/[0.06] md:text-[20vw]"
-        >
+      {/* MEGA WORDMARK with parallax */}
+      <motion.div
+        className="pointer-events-none absolute inset-0 z-[3] flex flex-col items-center justify-center"
+        animate={{
+          x: (m.x - 0.5) * -32,
+          y: (m.y - 0.5) * -16,
+        }}
+        transition={{ type: 'spring', stiffness: 40, damping: 18 }}
+      >
+        <h1 className="font-['Bebas_Neue'] text-[28vw] leading-[0.82] tracking-tight text-white/[0.06] md:text-[20vw]">
           KOREA
-        </motion.h1>
-      </div>
+        </h1>
+      </motion.div>
 
-      {/* 3D CAR — center stage */}
-      <div className="absolute inset-0 z-[4]">
+      {/* 3D CAR */}
+      <div
+        className="absolute inset-0 z-[4]"
+        data-cursor="car"
+        onClick={handleStageClick}
+      >
         <Suspense fallback={null}>
           <CarScene
             teamId={team.id}
             autoRotate={autoRotate}
             rimColor={team.color}
+            boostRef={boostRef}
+            parallaxRef={parallaxRef}
             onLoaded={() => setLoaded(true)}
           />
         </Suspense>
       </div>
 
-      {/* Vignette over car */}
+      {/* Vignette */}
       <div className="pointer-events-none absolute inset-0 z-[5] bg-[radial-gradient(ellipse_at_50%_60%,transparent_0%,transparent_40%,rgba(0,0,0,0.7)_85%)]" />
 
       {/* HEADER */}
@@ -169,21 +253,18 @@ export default function Landing() {
         transition={{ delay: 0.6, duration: 0.6 }}
         className="absolute left-8 top-20 z-20 flex items-center gap-2 md:left-14 md:top-24"
       >
-        <div
-          className="ticker-dot h-1.5 w-1.5 rounded-full"
-          style={{ background: team.color }}
-        />
+        <div className="ticker-dot h-1.5 w-1.5 rounded-full" style={{ background: team.color }} />
         <span className="font-mono text-[10px] tracking-[0.3em] text-white/55">
           ARCHIVE — DORMANT SINCE 2013
         </span>
       </motion.div>
 
-      {/* TEAM PANEL — top right under clock */}
+      {/* TEAM NAME PANEL — top right */}
       <motion.div
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.8 }}
-        className="absolute right-8 top-20 z-20 md:right-14 md:top-24"
+        className="absolute left-8 top-32 z-20 md:left-14"
       >
         <AnimatePresence mode="wait">
           <motion.div
@@ -192,22 +273,28 @@ export default function Landing() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.35 }}
-            className="text-right"
           >
-            <div className="font-mono text-[9px] tracking-[0.3em] text-white/35">
-              NOW VIEWING
-            </div>
-            <div className="font-['Bebas_Neue'] text-2xl tracking-wide" style={{ color: team.color }}>
+            <div className="font-mono text-[9px] tracking-[0.3em] text-white/35">NOW VIEWING</div>
+            <div className="font-['Bebas_Neue'] text-3xl tracking-wide" style={{ color: team.color }}>
               {team.name.toUpperCase()}
             </div>
-            <div className="font-mono text-[10px] tracking-[0.25em] text-white/55">
-              {team.driverLine}
-            </div>
+            <div className="font-mono text-[10px] tracking-[0.25em] text-white/55">{team.driverLine}</div>
           </motion.div>
         </AnimatePresence>
       </motion.div>
 
-      {/* CENTER TAGLINE (bottom) */}
+      {/* TELEMETRY HUD */}
+      <TelemetryHUD
+        speed={tele.speed}
+        rpm={tele.rpm}
+        gear={tele.gear}
+        throttle={tele.throttle}
+        brake={tele.brake}
+        drs={tele.drs}
+        color={team.color}
+      />
+
+      {/* CENTER TAGLINE */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -221,7 +308,7 @@ export default function Landing() {
         </h2>
       </motion.div>
 
-      {/* TEAM SWITCHER — bottom dock */}
+      {/* TEAM SWITCHER + CONTROLS DOCK */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -234,7 +321,7 @@ export default function Landing() {
             return (
               <button
                 key={t.id}
-                onClick={() => setTeamIdx(i)}
+                onClick={() => pickTeam(i)}
                 className="group relative flex items-center gap-2 rounded-full px-3 py-1.5 transition"
                 style={{
                   background: active ? t.color : 'transparent',
@@ -253,13 +340,40 @@ export default function Landing() {
               </button>
             )
           })}
+
+          <span className="mx-1 h-5 w-px bg-white/10" />
+
+          <button
+            onClick={() => {
+              setAutoRotate((v) => !v)
+              tick()
+            }}
+            className="flex h-7 w-7 items-center justify-center rounded-full text-white/60 transition hover:bg-white/10 hover:text-white"
+            aria-label="Toggle rotation"
+          >
+            {autoRotate ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
+          </button>
+          <button
+            onClick={toggleMute}
+            className="flex h-7 w-7 items-center justify-center rounded-full text-white/60 transition hover:bg-white/10 hover:text-white"
+            aria-label="Toggle sound"
+          >
+            {muted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
+          </button>
+          <button
+            onClick={toggleFullscreen}
+            className="flex h-7 w-7 items-center justify-center rounded-full text-white/60 transition hover:bg-white/10 hover:text-white"
+            aria-label="Fullscreen"
+          >
+            <Maximize2 className="h-3.5 w-3.5" />
+          </button>
         </div>
         <div className="mt-2 text-center font-mono text-[9px] tracking-[0.3em] text-white/30">
-          ← → KEYS · 1-5 · SPACE TO PAUSE
+          ← → / 1-5 SWITCH · SPACE PAUSE · R BOOST · M SOUND · F FULLSCREEN · CLICK STAGE
         </div>
       </motion.div>
 
-      {/* Loading overlay */}
+      {/* Loading */}
       <AnimatePresence>
         {!loaded && (
           <motion.div
@@ -278,7 +392,10 @@ export default function Landing() {
       {/* MARQUEE */}
       <div className="absolute inset-x-0 bottom-0 z-20 border-t border-white/10 bg-black/70 backdrop-blur-sm">
         <div className="flex overflow-hidden py-3">
-          <div className="marquee-track flex shrink-0 items-center gap-10 whitespace-nowrap font-mono text-[11px] tracking-[0.35em] text-white/55">
+          <div
+            className="marquee-track flex shrink-0 items-center gap-10 whitespace-nowrap font-mono text-[11px] tracking-[0.35em] text-white/55"
+            style={{ animationDuration: `${40 / (1 + activity)}s` }}
+          >
             {[...FACTS, ...FACTS].map((f, i) => (
               <span key={i} className="flex items-center gap-10">
                 <span>{f}</span>

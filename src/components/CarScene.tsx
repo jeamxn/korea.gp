@@ -8,13 +8,10 @@ import {
   OrbitControls,
   Html,
   useProgress,
-  AccumulativeShadows,
-  RandomizedLight,
 } from '@react-three/drei'
 import type { Group } from 'three'
 import { TEAMS } from '../data/teams'
 
-// Preload all team GLBs aggressively so switching is instant after first load
 TEAMS.forEach((t) => useGLTF.preload(t.glb))
 
 function Car({
@@ -22,27 +19,46 @@ function Car({
   scale,
   y,
   autoRotate,
-  speed,
+  baseSpeed,
+  boostRef,
+  parallaxRef,
 }: {
   url: string
   scale: number
   y: number
   autoRotate: boolean
-  speed: number
+  baseSpeed: number
+  boostRef: React.MutableRefObject<number>
+  parallaxRef: React.MutableRefObject<{ x: number; y: number }>
 }) {
   const group = useRef<Group>(null)
+  const inner = useRef<Group>(null)
   const { scene } = useGLTF(url)
 
   useFrame((_, dt) => {
-    if (group.current && autoRotate) {
+    if (!group.current || !inner.current) return
+
+    // Boost decay
+    boostRef.current = Math.max(0, boostRef.current - dt * 2.0)
+    const speed = baseSpeed + boostRef.current * 4
+
+    if (autoRotate) {
       group.current.rotation.y += dt * speed
     }
+
+    // Parallax tilt — eases toward mouse
+    const tx = parallaxRef.current.x
+    const ty = parallaxRef.current.y
+    inner.current.rotation.z += (tx * 0.06 - inner.current.rotation.z) * Math.min(1, dt * 4)
+    inner.current.rotation.x += (-ty * 0.05 - inner.current.rotation.x) * Math.min(1, dt * 4)
+    inner.current.position.y += (ty * 0.05 - inner.current.position.y) * Math.min(1, dt * 4)
   })
 
-  // Clone to allow independent material tweaks across multiple cars later
   return (
     <group ref={group} dispose={null}>
-      <primitive object={scene} scale={scale} position={[0, y, 0]} />
+      <group ref={inner}>
+        <primitive object={scene} scale={scale} position={[0, y, 0]} />
+      </group>
     </group>
   )
 }
@@ -64,6 +80,8 @@ export default function CarScene({
   speed = 0.25,
   enableControls = true,
   rimColor,
+  boostRef,
+  parallaxRef,
   onLoaded,
 }: {
   teamId: string
@@ -71,12 +89,13 @@ export default function CarScene({
   speed?: number
   enableControls?: boolean
   rimColor: string
+  boostRef: React.MutableRefObject<number>
+  parallaxRef: React.MutableRefObject<{ x: number; y: number }>
   onLoaded?: () => void
 }) {
   const team = TEAMS.find((t) => t.id === teamId) ?? TEAMS[0]
 
   useEffect(() => {
-    // Notify loaded shortly after mount (Suspense resolves)
     const t = setTimeout(() => onLoaded?.(), 350)
     return () => clearTimeout(t)
   }, [teamId, onLoaded])
@@ -89,28 +108,28 @@ export default function CarScene({
       gl={{ antialias: true, alpha: true }}
       style={{ background: 'transparent' }}
     >
-      <ambientLight intensity={0.2} />
+      <ambientLight intensity={0.22} />
       <spotLight
         position={[6, 9, 4]}
         angle={0.4}
         penumbra={1}
-        intensity={180}
+        intensity={200}
         castShadow
         color="#ffffff"
         shadow-mapSize={[1024, 1024]}
       />
       <spotLight
         position={[-6, 4, -4]}
-        angle={0.5}
+        angle={0.55}
         penumbra={1}
-        intensity={90}
+        intensity={120}
         color={rimColor}
       />
       <spotLight
         position={[0, 2, -6]}
         angle={0.7}
         penumbra={1}
-        intensity={40}
+        intensity={45}
         color="#3a6df0"
       />
 
@@ -121,31 +140,22 @@ export default function CarScene({
             scale={team.baseScale}
             y={team.baseY}
             autoRotate={autoRotate}
-            speed={speed}
+            baseSpeed={speed}
+            boostRef={boostRef}
+            parallaxRef={parallaxRef}
           />
         </Float>
 
-        <AccumulativeShadows
-          temporal
-          frames={60}
-          alphaTest={0.85}
-          opacity={0.85}
-          scale={12}
-          position={[0, -0.55, 0]}
-        >
-          <RandomizedLight amount={6} radius={6} intensity={1.4} ambient={0.55} position={[6, 8, 4]} />
-        </AccumulativeShadows>
-
         <ContactShadows
           position={[0, -0.55, 0]}
-          opacity={0.55}
+          opacity={0.7}
           scale={10}
           blur={2.2}
           far={3}
           color="#000000"
         />
 
-        <Environment preset="city" environmentIntensity={0.55} />
+        <Environment preset="city" environmentIntensity={0.6} />
       </Suspense>
 
       {enableControls && (
