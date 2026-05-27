@@ -4,6 +4,7 @@ import { Volume2, VolumeX, Pause, Play, Maximize2 } from 'lucide-react'
 import { TEAMS } from '../data/teams'
 import { useMouse } from '../hooks/useMouse'
 import { useTelemetry } from '../hooks/useTelemetry'
+import { useReducedMotion, useTabVisible, useIsMobile } from '../hooks/useEnvironment'
 import { engineRev, tick, boost as boostSfx, setMuted, isMuted } from '../lib/sfx'
 import CustomCursor from '../components/CustomCursor'
 import { TelemetryHUD } from '../components/TelemetryHUD'
@@ -57,8 +58,13 @@ export default function Landing() {
   const [teamIdx, setTeamIdx] = useState(0)
   const [autoRotate, setAutoRotate] = useState(true)
   const [loaded, setLoaded] = useState(false)
-  const [muted, setMutedState] = useState(true) // start muted so autoplay policy OK
+  const [muted, setMutedState] = useState(true)
+  const [keyHint, setKeyHint] = useState<string | null>(null)
   const team = TEAMS[teamIdx]
+
+  const reducedMotion = useReducedMotion()
+  const tabVisible = useTabVisible()
+  const isMobile = useIsMobile()
 
   // refs passed into Canvas — avoids re-renders for animation values
   const boostRef = useRef(0)
@@ -77,34 +83,45 @@ export default function Landing() {
 
   // Keyboard
   useEffect(() => {
+    const showHint = (s: string) => {
+      setKeyHint(s)
+      setTimeout(() => setKeyHint(null), 900)
+    }
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
         next()
+        showHint('NEXT TEAM →')
       } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
         prev()
+        showHint('← PREV TEAM')
       } else if (e.key === ' ') {
         e.preventDefault()
         setAutoRotate((v) => !v)
         tick()
+        showHint(autoRotate ? 'PAUSE' : 'PLAY')
       } else if (/^[1-5]$/.test(e.key)) {
         const i = parseInt(e.key, 10) - 1
         if (i !== teamIdx) {
           setTeamIdx(i)
           engineRev()
+          showHint(`SELECT ${TEAMS[i].short}`)
         }
       } else if (e.key === 'm' || e.key === 'M') {
         toggleMute()
+        showHint(muted ? 'SOUND ON' : 'MUTED')
       } else if (e.key === 'f' || e.key === 'F') {
         toggleFullscreen()
+        showHint('FULLSCREEN')
       } else if (e.key === 'r' || e.key === 'R') {
         boostRef.current = 1.5
         boostSfx()
+        showHint('BOOST')
       }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [teamIdx])
+  }, [teamIdx, autoRotate, muted])
 
   const next = () => {
     setTeamIdx((i) => (i + 1) % TEAMS.length)
@@ -146,11 +163,11 @@ export default function Landing() {
         {
           '--accent': team.color,
           '--accent-rgb': team.colorRgb,
-          cursor: 'none',
+          cursor: isMobile ? 'auto' : 'none',
         } as React.CSSProperties
       }
     >
-      <CustomCursor color={team.color} />
+      {!isMobile && <CustomCursor color={team.color} />}
 
       {/* Background grid with parallax */}
       <motion.div
@@ -220,10 +237,11 @@ export default function Landing() {
         <Suspense fallback={null}>
           <CarScene
             teamId={team.id}
-            autoRotate={autoRotate}
+            autoRotate={autoRotate && tabVisible}
             rimColor={team.color}
             boostRef={boostRef}
             parallaxRef={parallaxRef}
+            reducedMotion={reducedMotion}
             onLoaded={() => setLoaded(true)}
           />
         </Suspense>
@@ -405,12 +423,36 @@ export default function Landing() {
           <motion.div
             initial={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.5 }}
-            className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center bg-black"
+            transition={{ duration: 0.8 }}
+            className="pointer-events-none absolute inset-0 z-30 flex flex-col items-center justify-center bg-black"
           >
-            <div className="font-mono text-[10px] tracking-[0.4em] text-white/60">
+            <motion.div
+              animate={{ opacity: [0.4, 1, 0.4] }}
+              transition={{ duration: 1.6, repeat: Infinity }}
+              className="font-['Bebas_Neue'] text-6xl tracking-tight md:text-7xl"
+            >
+              KOREA<span style={{ color: team.color }}>.</span>GP
+            </motion.div>
+            <div className="mt-3 font-mono text-[10px] tracking-[0.4em] text-white/40">
               STARTING ENGINES…
             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Key hint flash */}
+      <AnimatePresence>
+        {keyHint && (
+          <motion.div
+            key={keyHint}
+            initial={{ opacity: 0, y: 6, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.18 }}
+            className="pointer-events-none absolute left-1/2 top-1/2 z-30 -translate-x-1/2 -translate-y-32 rounded-full border border-white/20 bg-black/70 px-4 py-1.5 font-mono text-[11px] tracking-[0.3em] text-white backdrop-blur-md"
+            style={{ boxShadow: `0 0 24px ${team.color}40` }}
+          >
+            {keyHint}
           </motion.div>
         )}
       </AnimatePresence>

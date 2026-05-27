@@ -32,7 +32,7 @@ export const TEAMS: Team[] = [
     colorRgb: '54,113,198',
     glb: `${BASE}/redbull.glb`,
     driverLine: 'VERSTAPPEN · TSUNODA',
-    baseScale: 1.0,
+    baseScale: 1.05,
     baseY: -0.55,
   },
   {
@@ -43,7 +43,7 @@ export const TEAMS: Team[] = [
     colorRgb: '39,244,210',
     glb: `${BASE}/mercedes.glb`,
     driverLine: 'RUSSELL · ANTONELLI',
-    baseScale: 1.0,
+    baseScale: 0.95,
     baseY: -0.55,
   },
   {
@@ -54,7 +54,7 @@ export const TEAMS: Team[] = [
     colorRgb: '255,128,0',
     glb: `${BASE}/mclaren.glb`,
     driverLine: 'NORRIS · PIASTRI',
-    baseScale: 1.0,
+    baseScale: 0.95,
     baseY: -0.55,
   },
   {
