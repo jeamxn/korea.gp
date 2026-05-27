@@ -19,7 +19,7 @@ export function TelemetryHUD({
 }) {
   const rpmPct = Math.min(1, (rpm - 4000) / 9000)
   return (
-    <div className="absolute right-8 top-1/2 z-20 hidden -translate-y-1/2 md:right-14 md:block">
+    <div className="absolute left-8 top-1/2 z-20 hidden -translate-y-1/2 md:left-14 md:block">
       <div className="rounded-md border border-white/10 bg-black/40 p-4 backdrop-blur-md">
         <div className="font-mono text-[9px] tracking-[0.3em] text-white/35">TELEMETRY</div>
 

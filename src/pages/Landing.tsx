@@ -7,6 +7,9 @@ import { useTelemetry } from '../hooks/useTelemetry'
 import { engineRev, tick, boost as boostSfx, setMuted, isMuted } from '../lib/sfx'
 import CustomCursor from '../components/CustomCursor'
 import { TelemetryHUD } from '../components/TelemetryHUD'
+import { TrackMap } from '../components/TrackMap'
+import { WinnersTimeline } from '../components/WinnersTimeline'
+import { GForce } from '../components/GForce'
 
 const CarScene = lazy(() => import('../components/CarScene'))
 
@@ -293,6 +296,29 @@ export default function Landing() {
         drs={tele.drs}
         color={team.color}
       />
+
+      {/* LEFT BOTTOM — winners timeline */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1.4 }}
+        className="absolute bottom-32 left-8 z-20 hidden w-[18rem] md:left-14 md:block"
+      >
+        <WinnersTimeline />
+      </motion.div>
+
+      {/* RIGHT — Track map */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1.5 }}
+        className="absolute right-8 top-1/2 z-20 hidden w-[20rem] -translate-y-1/2 space-y-2 md:right-14 md:block"
+      >
+        <TrackMap color={team.color} />
+        <div className="flex justify-end">
+          <GForce color={team.color} />
+        </div>
+      </motion.div>
 
       {/* CENTER TAGLINE */}
       <motion.div
