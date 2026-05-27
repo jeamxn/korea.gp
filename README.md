@@ -17,8 +17,16 @@ fullscreen single-page experience in the spirit of `japan.gp` and `canada.gp`.
   Floating key hint feedback pill.
 - **Synthesised telemetry** — speed / RPM / gear / throttle / brake / DRS
   driven by mouse activity; mini Yeongam track map with live lap dot,
-  hover-revealed turn markers (T1..T18), sector indicators; mouse-driven
-  G-force meter; winner timeline 2010-2013.
+  hover-revealed turn markers (T1..T18), live S1/S2/S3 sector times with
+  personal-best highlights; mouse-driven G-force meter; clickable winner
+  timeline 2010-2013 with detail modal.
+- **Per-team data** — spec card (top speed, weight, power unit, chassis),
+  expandable "why dormant" explainer, F1 2026 regs T-minus countdown,
+  live-updating marquee that reflects current team + season status.
+- **Mobile** — swipe left/right to switch teams (with haptic feedback);
+  adaptive 3D quality (lower DPR, no post-FX, smaller shadow maps).
+- **Keyboard help overlay** (`?`) with a complete shortcut reference.
+- **Memory** — preferred team persisted across visits via localStorage.
 - **WebAudio SFX** — no asset download; engine rev sweep on team change,
   boost ramp, UI ticks. Starts muted (autoplay policy).
 - **Cinematic post-FX** — Bloom + mild ChromaticAberration + Vignette;
@@ -86,4 +94,9 @@ src/
 ## Credits
 
 3D models from [Moncito/f1-showroom-](https://github.com/Moncito/f1-showroom-)
-(MIT). Fonts: Inter, Bebas Neue, JetBrains Mono via Google Fonts.
+(MIT) and [misha-met/Delta](https://github.com/misha-met/Delta) (MIT).
+Fonts: Inter, Bebas Neue, JetBrains Mono via Google Fonts.
+
+Released under the [MIT License](./LICENSE).
+This site is an unofficial fan archive — not affiliated with the FIA,
+FOM, or any team.
