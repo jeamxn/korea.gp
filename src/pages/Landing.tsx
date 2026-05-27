@@ -28,40 +28,20 @@ export default function Landing() {
 
       {/* CENTER WORDMARK — sits on top of the orbiting cars */}
       <div className="pointer-events-none absolute inset-0 z-[5] flex items-center justify-center px-6">
-        <div className="text-center">
-          <motion.div
-            initial={{ opacity: 0, letterSpacing: '0.2em' }}
-            animate={{ opacity: 1, letterSpacing: '0em' }}
-            transition={{ duration: 1.4, ease: 'easeOut' }}
-            className="font-mono text-[10px] tracking-[0.5em] text-white/40 md:text-xs"
+        <motion.h1
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1.1, delay: 0.15 }}
+          className="text-center font-['Bebas_Neue'] leading-[0.82] tracking-tight"
+        >
+          <span className="block text-[16vw] md:text-[12vw]">FORMULA 1</span>
+          <span
+            className="block text-[24vw] md:text-[18vw]"
+            style={{ color: '#CD2E3A' }}
           >
-            EST · KOREA INTERNATIONAL CIRCUIT · 2010
-          </motion.div>
-
-          <motion.h1
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1.1, delay: 0.15 }}
-            className="mt-3 font-['Bebas_Neue'] leading-[0.82] tracking-tight"
-          >
-            <span className="block text-[16vw] md:text-[12vw]">FORMULA 1</span>
-            <span
-              className="block text-[24vw] md:text-[18vw]"
-              style={{ color: '#CD2E3A' }}
-            >
-              KOREA
-            </span>
-          </motion.h1>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1.2, delay: 0.9 }}
-            className="mt-4 font-mono text-[10px] tracking-[0.4em] text-white/45 md:text-xs"
-          >
-            — DORMANT SINCE 2013 —
-          </motion.div>
-        </div>
+            KOREA
+          </span>
+        </motion.h1>
       </div>
     </div>
   )
