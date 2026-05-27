@@ -172,6 +172,46 @@ export default function Landing() {
     boostSfx()
   }
 
+  // Mobile swipe: left/right to switch teams
+  useEffect(() => {
+    if (!isMobile) return
+    let startX = 0
+    let startY = 0
+    let active = false
+    const onStart = (e: TouchEvent) => {
+      if (e.touches.length !== 1) return
+      startX = e.touches[0].clientX
+      startY = e.touches[0].clientY
+      active = true
+    }
+    const onEnd = (e: TouchEvent) => {
+      if (!active) return
+      active = false
+      const t = e.changedTouches[0]
+      if (!t) return
+      const dx = t.clientX - startX
+      const dy = t.clientY - startY
+      if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+        if (dx < 0) next()
+        else prev()
+        if ('vibrate' in navigator) {
+          try {
+            navigator.vibrate(15)
+          } catch {
+            /* ignore */
+          }
+        }
+      }
+    }
+    window.addEventListener('touchstart', onStart, { passive: true })
+    window.addEventListener('touchend', onEnd, { passive: true })
+    return () => {
+      window.removeEventListener('touchstart', onStart)
+      window.removeEventListener('touchend', onEnd)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMobile])
+
   // Persist team selection
   useEffect(() => {
     try {
