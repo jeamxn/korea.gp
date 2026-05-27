@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 // Stylised representation of Korea International Circuit (KIC) at Yeongam.
 // Not a survey path — drawn for visual rhythm; 18 turns marked along
@@ -28,11 +28,28 @@ const TURNS = [
   { x: 60, y: 230, n: 18 },
 ]
 
+const fmtSector = (ms: number) => {
+  const s = ms / 1000
+  return s.toFixed(3)
+}
+
 export function TrackMap({ color, lapMs = 95000 }: { color: string; lapMs?: number }) {
   const [progress, setProgress] = useState(0)
   const [length, setLength] = useState(0)
   const [pathRef, setPathRef] = useState<SVGPathElement | null>(null)
   const [hoverTurn, setHoverTurn] = useState<number | null>(null)
+  const [sectorTimes, setSectorTimes] = useState<[number, number, number]>([
+    lapMs * 0.34,
+    lapMs * 0.33,
+    lapMs * 0.33,
+  ])
+  const [bestSectors, setBestSectors] = useState<[number, number, number]>([
+    lapMs * 0.34,
+    lapMs * 0.33,
+    lapMs * 0.33,
+  ])
+  const sectorStartRef = useRef(performance.now())
+  const prevSectorRef = useRef(1)
 
   // measure path length once node mounts
   useEffect(() => {
@@ -42,9 +59,29 @@ export function TrackMap({ color, lapMs = 95000 }: { color: string; lapMs?: numb
   useEffect(() => {
     let raf = 0
     const start = performance.now()
+    sectorStartRef.current = start
+    prevSectorRef.current = 1
     const tick = () => {
-      const t = ((performance.now() - start) / lapMs) % 1
+      const now = performance.now()
+      const t = ((now - start) / lapMs) % 1
       setProgress(t)
+      const sec = t < 0.34 ? 1 : t < 0.67 ? 2 : 3
+      if (sec !== prevSectorRef.current) {
+        const elapsed = now - sectorStartRef.current
+        const completed = prevSectorRef.current
+        setSectorTimes((prev) => {
+          const next = [...prev] as [number, number, number]
+          next[completed - 1] = elapsed
+          return next
+        })
+        setBestSectors((prev) => {
+          const next = [...prev] as [number, number, number]
+          if (elapsed < next[completed - 1]) next[completed - 1] = elapsed
+          return next
+        })
+        sectorStartRef.current = now
+        prevSectorRef.current = sec
+      }
       raf = requestAnimationFrame(tick)
     }
     raf = requestAnimationFrame(tick)
@@ -61,6 +98,10 @@ export function TrackMap({ color, lapMs = 95000 }: { color: string; lapMs?: numb
 
   const sector = progress < 0.34 ? 1 : progress < 0.67 ? 2 : 3
   const sectorColor = sector === 1 ? '#ff2d2d' : sector === 2 ? '#fada00' : '#23d160'
+  const totalBest = bestSectors[0] + bestSectors[1] + bestSectors[2]
+  const bestLap = `${Math.floor(totalBest / 60000)}:${String(
+    Math.floor((totalBest % 60000) / 1000),
+  ).padStart(2, '0')}.${String(Math.floor(totalBest % 1000)).padStart(3, '0')}`
 
   return (
     <div className="rounded-md border border-white/10 bg-black/55 p-3 backdrop-blur-md">
@@ -156,8 +197,41 @@ export function TrackMap({ color, lapMs = 95000 }: { color: string; lapMs?: numb
         />
       </svg>
 
-      <div className="mt-1 grid grid-cols-3 gap-2 text-center">
-        <Stat label="LAP" v="1:39.605" />
+      <div className="mt-1 grid grid-cols-3 gap-1">
+        {([1, 2, 3] as const).map((i) => {
+          const live = sectorTimes[i - 1]
+          const best = bestSectors[i - 1]
+          const isPB = live <= best + 1
+          const active = sector === i
+          return (
+            <div
+              key={i}
+              className="rounded-sm border border-white/10 px-1.5 py-1"
+              style={{
+                background: active ? `${color}1a` : 'transparent',
+                borderColor: active ? color : 'rgba(255,255,255,0.08)',
+              }}
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-mono text-[8px] tracking-[0.2em] text-white/40">S{i}</span>
+                <span
+                  className="h-1 w-1 rounded-full"
+                  style={{
+                    background: isPB ? '#a855f7' : '#23d160',
+                    boxShadow: `0 0 4px ${isPB ? '#a855f7' : '#23d160'}`,
+                  }}
+                />
+              </div>
+              <div className="font-mono text-[10px] tabular-nums tracking-wider text-white/90">
+                {fmtSector(live)}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      <div className="mt-1.5 grid grid-cols-3 gap-2 border-t border-white/5 pt-1.5 text-center">
+        <Stat label="BEST" v={bestLap} />
         <Stat label="TURNS" v="18" />
         <Stat label="LENGTH" v="5.615 KM" />
       </div>
