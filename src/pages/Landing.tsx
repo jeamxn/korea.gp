@@ -333,6 +333,7 @@ export default function Landing() {
             boostRef={boostRef}
             parallaxRef={parallaxRef}
             reducedMotion={reducedMotion}
+            lowPower={isMobile}
             onLoaded={() => setLoaded(true)}
           />
         </Suspense>

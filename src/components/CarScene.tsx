@@ -105,6 +105,7 @@ export default function CarScene({
   boostRef,
   parallaxRef,
   reducedMotion = false,
+  lowPower = false,
   onLoaded,
 }: {
   teamId: string
@@ -115,6 +116,7 @@ export default function CarScene({
   boostRef: React.MutableRefObject<number>
   parallaxRef: React.MutableRefObject<{ x: number; y: number }>
   reducedMotion?: boolean
+  lowPower?: boolean
   onLoaded?: () => void
 }) {
   const team = TEAMS.find((t) => t.id === teamId) ?? TEAMS[0]
@@ -124,12 +126,14 @@ export default function CarScene({
     return () => clearTimeout(t)
   }, [teamId, onLoaded])
 
+  const heavy = !reducedMotion && !lowPower
+
   return (
     <Canvas
-      shadows
-      dpr={[1, 2]}
+      shadows={heavy}
+      dpr={lowPower ? [1, 1.25] : [1, 2]}
       camera={{ position: [3.8, 1.2, 5.0], fov: 32 }}
-      gl={{ antialias: true, alpha: true }}
+      gl={{ antialias: !lowPower, alpha: true, powerPreference: lowPower ? 'low-power' : 'high-performance' }}
       style={{ background: 'transparent' }}
     >
       <ambientLight intensity={0.22} />
@@ -138,9 +142,9 @@ export default function CarScene({
         angle={0.4}
         penumbra={1}
         intensity={220}
-        castShadow
+        castShadow={heavy}
         color="#ffffff"
-        shadow-mapSize={[1024, 1024]}
+        shadow-mapSize={[lowPower ? 512 : 1024, lowPower ? 512 : 1024]}
       />
       <spotLight
         position={[-6, 4, -4]}
@@ -170,21 +174,22 @@ export default function CarScene({
           />
         </Float>
 
-        <Floor color={rimColor} />
+        {lowPower ? null : <Floor color={rimColor} />}
 
         <ContactShadows
           position={[0, -0.549, 0]}
           opacity={0.55}
           scale={10}
-          blur={2.2}
+          blur={lowPower ? 1.4 : 2.2}
           far={3}
           color="#000000"
+          resolution={lowPower ? 256 : 512}
         />
 
         <Environment preset="city" environmentIntensity={0.55} />
       </Suspense>
 
-      {!reducedMotion && (
+      {heavy && (
         <EffectComposer>
           <Bloom luminanceThreshold={0.45} luminanceSmoothing={0.4} intensity={0.55} mipmapBlur />
           <ChromaticAberration
