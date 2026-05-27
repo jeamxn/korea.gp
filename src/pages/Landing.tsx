@@ -1,5 +1,6 @@
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Suspense, lazy, useEffect, useState } from 'react'
+import { TEAMS } from '../data/teams'
 
 const CarScene = lazy(() => import('../components/CarScene'))
 
@@ -13,13 +14,6 @@ const FACTS = [
   'FERNANDO ALONSO · 1 WIN',
   'DESIGN — HERMANN TILKE',
   'KOREAN GRAND PRIX',
-]
-
-const STATS = [
-  { k: 'FIRST RACE', v: '24.10.2010' },
-  { k: 'LAST RACE', v: '06.10.2013' },
-  { k: 'LAP RECORD', v: '1:39.605' },
-  { k: 'RECORD HOLDER', v: 'M. WEBBER' },
 ]
 
 function Clock() {
@@ -51,8 +45,39 @@ function Clock() {
 }
 
 export default function Landing() {
+  const [teamIdx, setTeamIdx] = useState(0)
+  const [autoRotate, setAutoRotate] = useState(true)
+  const [loaded, setLoaded] = useState(false)
+  const team = TEAMS[teamIdx]
+
+  // Keyboard: arrow keys cycle teams, space toggles rotation
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        setTeamIdx((i) => (i + 1) % TEAMS.length)
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        setTeamIdx((i) => (i - 1 + TEAMS.length) % TEAMS.length)
+      } else if (e.key === ' ') {
+        e.preventDefault()
+        setAutoRotate((v) => !v)
+      } else if (/^[1-5]$/.test(e.key)) {
+        setTeamIdx(parseInt(e.key, 10) - 1)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+
   return (
-    <div className="relative h-screen w-screen overflow-hidden bg-[#0a0a0a] text-[#f5f3ef]">
+    <div
+      className="relative h-screen w-screen overflow-hidden bg-[#0a0a0a] text-[#f5f3ef]"
+      style={
+        {
+          '--accent': team.color,
+          '--accent-rgb': team.colorRgb,
+        } as React.CSSProperties
+      }
+    >
       {/* Background grid */}
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.06]"
@@ -63,18 +88,31 @@ export default function Landing() {
         }}
       />
 
-      {/* Speed lines */}
+      {/* Animated radial bloom that follows accent color */}
+      <motion.div
+        key={team.id + '-bloom'}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 0.35 }}
+        transition={{ duration: 0.8 }}
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background: `radial-gradient(ellipse at 50% 60%, rgba(${team.colorRgb},0.22) 0%, transparent 55%)`,
+        }}
+      />
+
+      {/* Speed lines (color follows accent) */}
       <div className="pointer-events-none absolute inset-0 z-[1]">
         {Array.from({ length: 9 }).map((_, i) => (
           <div
             key={i}
-            className="speed-line absolute h-px bg-gradient-to-r from-transparent via-[#CD2E3A] to-transparent"
+            className="speed-line absolute h-px"
             style={{
               top: `${8 + i * 10}%`,
               width: `${10 + (i % 3) * 6}rem`,
               animationDuration: `${2.2 + (i % 3) * 0.6}s`,
               animationDelay: `${i * 0.35}s`,
               opacity: 0.55,
+              background: `linear-gradient(to right, transparent, ${team.color}, transparent)`,
             }}
           />
         ))}
@@ -95,24 +133,32 @@ export default function Landing() {
       {/* 3D CAR — center stage */}
       <div className="absolute inset-0 z-[4]">
         <Suspense fallback={null}>
-          <CarScene />
+          <CarScene
+            teamId={team.id}
+            autoRotate={autoRotate}
+            rimColor={team.color}
+            onLoaded={() => setLoaded(true)}
+          />
         </Suspense>
       </div>
 
-      {/* Radial vignette OVER the car for cinematic feel */}
+      {/* Vignette over car */}
       <div className="pointer-events-none absolute inset-0 z-[5] bg-[radial-gradient(ellipse_at_50%_60%,transparent_0%,transparent_40%,rgba(0,0,0,0.7)_85%)]" />
 
-      {/* HEADER — minimal */}
+      {/* HEADER */}
       <header className="absolute inset-x-0 top-0 z-20 flex items-center justify-between px-8 pt-6 md:px-14 md:pt-8">
         <div className="flex items-center gap-3">
-          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#CD2E3A]">
+          <motion.div
+            className="flex h-7 w-7 items-center justify-center rounded-full"
+            animate={{ backgroundColor: team.color }}
+            transition={{ duration: 0.5 }}
+          >
             <div className="h-1.5 w-1.5 rounded-full bg-white" />
-          </div>
+          </motion.div>
           <div className="font-mono text-[11px] tracking-[0.3em] text-white/80">
-            KOREA<span className="text-[#CD2E3A]">.</span>GP
+            KOREA<span style={{ color: team.color }}>.</span>GP
           </div>
         </div>
-
         <Clock />
       </header>
 
@@ -123,71 +169,111 @@ export default function Landing() {
         transition={{ delay: 0.6, duration: 0.6 }}
         className="absolute left-8 top-20 z-20 flex items-center gap-2 md:left-14 md:top-24"
       >
-        <div className="ticker-dot h-1.5 w-1.5 rounded-full bg-[#CD2E3A]" />
+        <div
+          className="ticker-dot h-1.5 w-1.5 rounded-full"
+          style={{ background: team.color }}
+        />
         <span className="font-mono text-[10px] tracking-[0.3em] text-white/55">
           ARCHIVE — DORMANT SINCE 2013
         </span>
       </motion.div>
 
-      {/* TOP center overline */}
+      {/* TEAM PANEL — top right under clock */}
       <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.9, delay: 0.4 }}
-        className="absolute left-1/2 top-24 z-20 flex -translate-x-1/2 items-center gap-3 font-mono text-[10px] tracking-[0.4em] text-white/40"
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.8 }}
+        className="absolute right-8 top-20 z-20 md:right-14 md:top-24"
       >
-        <span className="h-px w-8 bg-white/30" />
-        <span>FORMULA 1 · REPUBLIC OF KOREA</span>
-        <span className="h-px w-8 bg-white/30" />
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={team.id}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.35 }}
+            className="text-right"
+          >
+            <div className="font-mono text-[9px] tracking-[0.3em] text-white/35">
+              NOW VIEWING
+            </div>
+            <div className="font-['Bebas_Neue'] text-2xl tracking-wide" style={{ color: team.color }}>
+              {team.name.toUpperCase()}
+            </div>
+            <div className="font-mono text-[10px] tracking-[0.25em] text-white/55">
+              {team.driverLine}
+            </div>
+          </motion.div>
+        </AnimatePresence>
       </motion.div>
 
-      {/* BOTTOM CENTER — tagline */}
+      {/* CENTER TAGLINE (bottom) */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1, delay: 1 }}
-        className="absolute bottom-24 left-1/2 z-20 -translate-x-1/2 px-6 text-center"
+        className="absolute bottom-32 left-1/2 z-20 -translate-x-1/2 px-6 text-center"
       >
-        <h2 className="font-['Bebas_Neue'] text-4xl leading-[0.95] tracking-tight md:text-6xl">
+        <h2 className="font-['Bebas_Neue'] text-3xl leading-[0.95] tracking-tight md:text-5xl">
           THE LAND OF THE MORNING CALM
           <br />
-          <span className="text-[#CD2E3A]">MEETS</span> THE WORLD'S FASTEST SPORT
+          <span style={{ color: team.color }}>MEETS</span> THE WORLD'S FASTEST SPORT
         </h2>
-        <p className="mx-auto mt-3 max-w-xl font-mono text-[10px] tracking-[0.25em] text-white/45">
-          A FOUR-YEAR STORY BETWEEN YEONGAM AND FORMULA 1 — AND THE ROAD BACK.
-        </p>
       </motion.div>
 
-      {/* LEFT BOTTOM — stats */}
+      {/* TEAM SWITCHER — bottom dock */}
       <motion.div
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.8, delay: 1.2 }}
-        className="absolute bottom-20 left-8 z-20 hidden md:left-14 md:block"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1.2 }}
+        className="absolute bottom-14 left-1/2 z-20 -translate-x-1/2"
       >
-        <div className="grid grid-cols-2 gap-x-8 gap-y-3">
-          {STATS.map((s) => (
-            <div key={s.k}>
-              <div className="font-mono text-[9px] tracking-[0.3em] text-white/35">{s.k}</div>
-              <div className="font-mono text-sm tracking-wider text-white">{s.v}</div>
-            </div>
-          ))}
+        <div className="flex items-center gap-2 rounded-full border border-white/10 bg-black/60 px-2 py-2 backdrop-blur-md">
+          {TEAMS.map((t, i) => {
+            const active = i === teamIdx
+            return (
+              <button
+                key={t.id}
+                onClick={() => setTeamIdx(i)}
+                className="group relative flex items-center gap-2 rounded-full px-3 py-1.5 transition"
+                style={{
+                  background: active ? t.color : 'transparent',
+                  color: active ? '#000' : 'rgba(255,255,255,0.7)',
+                }}
+                aria-label={t.name}
+              >
+                <span
+                  className="h-2 w-2 rounded-full"
+                  style={{
+                    background: active ? '#000' : t.color,
+                    boxShadow: active ? 'none' : `0 0 8px ${t.color}`,
+                  }}
+                />
+                <span className="font-mono text-[10px] font-bold tracking-[0.2em]">{t.short}</span>
+              </button>
+            )
+          })}
+        </div>
+        <div className="mt-2 text-center font-mono text-[9px] tracking-[0.3em] text-white/30">
+          ← → KEYS · 1-5 · SPACE TO PAUSE
         </div>
       </motion.div>
 
-      {/* RIGHT BOTTOM — coordinates */}
-      <motion.div
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.8, delay: 1.2 }}
-        className="absolute bottom-20 right-8 z-20 hidden text-right md:right-14 md:block"
-      >
-        <div className="font-mono text-[9px] tracking-[0.3em] text-white/35">COORDINATES</div>
-        <div className="font-mono text-sm tracking-wider text-white">34.7333° N</div>
-        <div className="font-mono text-sm tracking-wider text-white">126.4167° E</div>
-        <div className="mt-3 font-mono text-[9px] tracking-[0.3em] text-white/35">CIRCUIT</div>
-        <div className="font-mono text-sm tracking-wider text-white">5.615 KM</div>
-      </motion.div>
+      {/* Loading overlay */}
+      <AnimatePresence>
+        {!loaded && (
+          <motion.div
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
+            className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center bg-black"
+          >
+            <div className="font-mono text-[10px] tracking-[0.4em] text-white/60">
+              STARTING ENGINES…
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* MARQUEE */}
       <div className="absolute inset-x-0 bottom-0 z-20 border-t border-white/10 bg-black/70 backdrop-blur-sm">
@@ -196,7 +282,7 @@ export default function Landing() {
             {[...FACTS, ...FACTS].map((f, i) => (
               <span key={i} className="flex items-center gap-10">
                 <span>{f}</span>
-                <span className="text-[#CD2E3A]">●</span>
+                <span style={{ color: team.color }}>●</span>
               </span>
             ))}
           </div>
