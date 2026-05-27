@@ -576,6 +576,18 @@ export default function Landing() {
             ))}
           </div>
         </div>
+        <div className="flex items-center justify-between border-t border-white/5 px-6 py-1.5 font-mono text-[9px] tracking-[0.3em] text-white/30 md:px-14">
+          <span>KOREA.GP · ARCHIVE EXHIBIT · NOT AFFILIATED WITH FIA / FOM</span>
+          <a
+            href="https://github.com/jeamxn/korea.gp"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="transition hover:text-white/70"
+            style={{ pointerEvents: 'auto' }}
+          >
+            SOURCE ↗
+          </a>
+        </div>
       </div>
     </div>
   )
