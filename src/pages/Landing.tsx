@@ -108,6 +108,19 @@ export default function Landing() {
   const [showFirstHint, setShowFirstHint] = useState(false)
   const [allSeen, setAllSeen] = useState(false)
   const [showHelp, setShowHelp] = useState(false)
+  // Defer Canvas mount until after first paint so the LCP text + chrome appear instantly,
+  // and the heavy three/postfx chunks aren't blocking the main render.
+  const [canvasReady, setCanvasReady] = useState(false)
+  useEffect(() => {
+    let raf2 = 0
+    const raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(() => setCanvasReady(true))
+    })
+    return () => {
+      cancelAnimationFrame(raf1)
+      if (raf2) cancelAnimationFrame(raf2)
+    }
+  }, [])
   const team = TEAMS[teamIdx]
 
   const reducedMotion = useReducedMotion()
@@ -368,17 +381,19 @@ export default function Landing() {
         onClick={handleStageClick}
       >
         <Suspense fallback={null}>
-          <CarScene
-            teamId={team.id}
-            autoRotate={autoRotate && tabVisible}
-            rimColor={team.color}
-            boostRef={boostRef}
-            parallaxRef={parallaxRef}
-            reducedMotion={reducedMotion}
-            lowPower={isMobile}
-            onLoaded={() => setLoaded(true)}
-            onProgress={(p) => setLoadPct(p)}
-          />
+          {canvasReady && (
+            <CarScene
+              teamId={team.id}
+              autoRotate={autoRotate && tabVisible}
+              rimColor={team.color}
+              boostRef={boostRef}
+              parallaxRef={parallaxRef}
+              reducedMotion={reducedMotion}
+              lowPower={isMobile}
+              onLoaded={() => setLoaded(true)}
+              onProgress={(p) => setLoadPct(p)}
+            />
+          )}
         </Suspense>
       </div>
 
