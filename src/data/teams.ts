@@ -30,7 +30,7 @@ export const TEAMS: Team[] = [
     short: 'RB',
     color: '#3671C6',
     colorRgb: '54,113,198',
-    glb: `${BASE}/redbull.glb`,
+    glb: 'https://cdn.jsdelivr.net/gh/misha-met/Delta@main/assets/models/f1-car.glb',
     driverLine: 'VERSTAPPEN · TSUNODA',
     baseScale: 1.05,
     baseY: -0.55,
