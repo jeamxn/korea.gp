@@ -11,6 +11,7 @@ import { TelemetryHUD } from '../components/TelemetryHUD'
 import { TrackMap } from '../components/TrackMap'
 import { WinnersTimeline } from '../components/WinnersTimeline'
 import { GForce } from '../components/GForce'
+import { HelpOverlay } from '../components/HelpOverlay'
 
 const CarScene = lazy(() => import('../components/CarScene'))
 
@@ -63,6 +64,7 @@ export default function Landing() {
   const [seenTeams, setSeenTeams] = useState<Set<string>>(new Set([TEAMS[0].id]))
   const [showFirstHint, setShowFirstHint] = useState(false)
   const [allSeen, setAllSeen] = useState(false)
+  const [showHelp, setShowHelp] = useState(false)
   const team = TEAMS[teamIdx]
 
   const reducedMotion = useReducedMotion()
@@ -119,6 +121,11 @@ export default function Landing() {
         boostRef.current = 1.5
         boostSfx()
         showHint('BOOST')
+      } else if (e.key === '?' || e.key === '/') {
+        e.preventDefault()
+        setShowHelp((v) => !v)
+      } else if (e.key === 'Escape') {
+        setShowHelp(false)
       }
     }
     window.addEventListener('keydown', onKey)
@@ -434,9 +441,17 @@ export default function Landing() {
           >
             <Maximize2 className="h-3.5 w-3.5" />
           </button>
+          <button
+            onClick={() => setShowHelp((v) => !v)}
+            className="flex h-7 w-7 items-center justify-center rounded-full font-mono text-[12px] font-bold text-white/60 transition hover:bg-white/10 hover:text-white"
+            aria-label="Keyboard shortcuts"
+            title="Keyboard shortcuts (?)"
+          >
+            ?
+          </button>
         </div>
         <div className="mt-2 text-center font-mono text-[9px] tracking-[0.3em] text-white/30">
-          ← → / 1-5 SWITCH · SPACE PAUSE · R BOOST · M SOUND · F FULLSCREEN · CLICK STAGE
+          ← → / 1-5 SWITCH · SPACE PAUSE · R BOOST · M SOUND · F FULLSCREEN · ? HELP
         </div>
       </motion.div>
 
@@ -523,6 +538,8 @@ export default function Landing() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <HelpOverlay open={showHelp} onClose={() => setShowHelp(false)} color={team.color} />
 
       {/* MARQUEE */}
       <div className="absolute inset-x-0 bottom-0 z-20 border-t border-white/10 bg-black/70 backdrop-blur-sm">
