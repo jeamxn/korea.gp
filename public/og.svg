@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0a0a0a"/>
+      <stop offset="1" stop-color="#1a0a0e"/>
+    </linearGradient>
+    <radialGradient id="bloom" cx="0.7" cy="0.4" r="0.6">
+      <stop offset="0" stop-color="#CD2E3A" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#0a0a0a" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#bloom)"/>
+
+  <!-- grid -->
+  <g stroke="#ffffff" stroke-opacity="0.06" stroke-width="1">
+    <path d="M0 80 H1200 M0 160 H1200 M0 240 H1200 M0 320 H1200 M0 400 H1200 M0 480 H1200 M0 560 H1200"/>
+    <path d="M80 0 V630 M160 0 V630 M240 0 V630 M320 0 V630 M400 0 V630 M480 0 V630 M560 0 V630 M640 0 V630 M720 0 V630 M800 0 V630 M880 0 V630 M960 0 V630 M1040 0 V630 M1120 0 V630"/>
+  </g>
+
+  <!-- speed lines -->
+  <g stroke="#CD2E3A" stroke-opacity="0.7" stroke-width="1.5">
+    <line x1="80" y1="120" x2="260" y2="120"/>
+    <line x1="60" y1="500" x2="320" y2="500"/>
+    <line x1="900" y1="180" x2="1120" y2="180"/>
+    <line x1="880" y1="540" x2="1100" y2="540"/>
+  </g>
+
+  <!-- giant wordmark watermark -->
+  <text x="600" y="430" text-anchor="middle" font-family="Impact, Bebas Neue, sans-serif"
+        font-size="420" fill="#ffffff" fill-opacity="0.05" letter-spacing="-8">KOREA</text>
+
+  <!-- accent dot + label -->
+  <circle cx="100" cy="80" r="10" fill="#CD2E3A"/>
+  <circle cx="100" cy="80" r="4" fill="#ffffff"/>
+  <text x="125" y="86" font-family="JetBrains Mono, ui-monospace, monospace"
+        font-size="18" fill="#ffffff" fill-opacity="0.85" letter-spacing="6">KOREA.GP</text>
+
+  <!-- title -->
+  <text x="100" y="320" font-family="Impact, Bebas Neue, sans-serif"
+        font-size="120" fill="#f5f3ef" letter-spacing="-2">FORMULA 1</text>
+  <text x="100" y="430" font-family="Impact, Bebas Neue, sans-serif"
+        font-size="120" letter-spacing="-2">
+    <tspan fill="#CD2E3A">×</tspan>
+    <tspan fill="#f5f3ef"> KOREA</tspan>
+  </text>
+
+  <!-- subtitle -->
+  <text x="100" y="490" font-family="JetBrains Mono, ui-monospace, monospace"
+        font-size="20" fill="#ffffff" fill-opacity="0.6" letter-spacing="6">
+    KOREAN GRAND PRIX · YEONGAM · 2010—2013
+  </text>
+
+  <!-- footer pill -->
+  <rect x="100" y="540" width="220" height="34" rx="17" fill="none" stroke="#ffffff" stroke-opacity="0.2"/>
+  <circle cx="118" cy="557" r="4" fill="#CD2E3A"/>
+  <text x="132" y="562" font-family="JetBrains Mono, ui-monospace, monospace"
+        font-size="14" fill="#ffffff" fill-opacity="0.7" letter-spacing="4">INTERACTIVE ARCHIVE</text>
+</svg>
