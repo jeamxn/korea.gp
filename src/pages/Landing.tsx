@@ -29,9 +29,9 @@ export default function Landing() {
       {/* CENTER WORDMARK — sits on top of the orbiting cars */}
       <div className="pointer-events-none absolute inset-0 z-[5] flex items-center justify-center px-6">
         <motion.h1
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1.1, delay: 0.15 }}
+          initial={{ opacity: 0, y: 24, filter: 'blur(24px)' }}
+          animate={{ opacity: 1, y: 0, filter: 'blur(8px)' }}
+          transition={{ duration: 1.4, delay: 0.15, ease: 'easeOut' }}
           className="text-center font-['Bebas_Neue'] leading-[0.82] tracking-tight text-[28vw] md:text-[22vw]"
         >
           KOREA<span style={{ color: '#CD2E3A' }}>.</span>GP
