@@ -26,7 +26,7 @@ export default function Landing() {
         </Suspense>
       </div>
 
-      {/* CENTER WORDMARK — pure glass blur in the shape of KOREA.GP, no outline */}
+      {/* CENTER WORDMARK — color invert in the shape of KOREA.GP */}
       <div className="pointer-events-none absolute inset-0 z-[5] flex items-center justify-center px-6">
         <motion.div
           initial={{ opacity: 0, y: 24 }}
@@ -38,9 +38,8 @@ export default function Landing() {
           <div
             className="absolute inset-0"
             style={{
-              backdropFilter: 'blur(22px) saturate(1.5)',
-              WebkitBackdropFilter: 'blur(22px) saturate(1.5)',
-              background: 'rgba(255,255,255,0.05)',
+              backdropFilter: 'invert(1) hue-rotate(180deg)',
+              WebkitBackdropFilter: 'invert(1) hue-rotate(180deg)',
               WebkitMaskImage:
                 "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 280'><text x='500' y='225' text-anchor='middle' font-family='Impact, Haettenschweiler, Arial Narrow Bold, sans-serif' font-size='260' letter-spacing='-4' font-weight='400' fill='white'>KOREA.GP</text></svg>\")",
               maskImage:
