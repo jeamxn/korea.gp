@@ -26,16 +26,78 @@ export default function Landing() {
         </Suspense>
       </div>
 
-      {/* CENTER WORDMARK — sits on top of the orbiting cars */}
+      {/* CENTER WORDMARK — glassmorphism on the text shape */}
       <div className="pointer-events-none absolute inset-0 z-[5] flex items-center justify-center px-6">
-        <motion.h1
-          initial={{ opacity: 0, y: 24, filter: 'blur(24px)' }}
-          animate={{ opacity: 1, y: 0, filter: 'blur(8px)' }}
-          transition={{ duration: 1.4, delay: 0.15, ease: 'easeOut' }}
-          className="text-center font-['Bebas_Neue'] leading-[0.82] tracking-tight text-[28vw] md:text-[22vw]"
+        <motion.svg
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1.1, delay: 0.15 }}
+          viewBox="0 0 1000 280"
+          className="w-[92vw] md:w-[80vw]"
+          preserveAspectRatio="xMidYMid meet"
         >
-          KOREA<span style={{ color: '#CD2E3A' }}>.</span>GP
-        </motion.h1>
+          <defs>
+            <mask id="koreagp-mask">
+              <rect width="1000" height="280" fill="black" />
+              <text
+                x="500"
+                y="232"
+                textAnchor="middle"
+                fontFamily="Bebas Neue, sans-serif"
+                fontSize="260"
+                fill="white"
+                letterSpacing="-6"
+              >
+                KOREA.GP
+              </text>
+            </mask>
+          </defs>
+
+          {/* Frosted-glass fill — visible only inside the letterforms */}
+          <foreignObject width="1000" height="280" mask="url(#koreagp-mask)">
+            <div
+              // @ts-expect-error xmlns required for foreignObject html content
+              xmlns="http://www.w3.org/1999/xhtml"
+              style={{
+                width: '100%',
+                height: '100%',
+                backdropFilter: 'blur(18px) saturate(1.4)',
+                WebkitBackdropFilter: 'blur(18px) saturate(1.4)',
+                background: 'rgba(255,255,255,0.08)',
+              }}
+            />
+          </foreignObject>
+
+          {/* Thin outline so the glass edges read */}
+          <text
+            x="500"
+            y="232"
+            textAnchor="middle"
+            fontFamily="Bebas Neue, sans-serif"
+            fontSize="260"
+            fill="none"
+            stroke="rgba(255,255,255,0.35)"
+            strokeWidth="1"
+            letterSpacing="-6"
+          >
+            KOREA.GP
+          </text>
+
+          {/* Red accent — only the dot is filled, rest stays glass */}
+          <text
+            x="500"
+            y="232"
+            textAnchor="middle"
+            fontFamily="Bebas Neue, sans-serif"
+            fontSize="260"
+            letterSpacing="-6"
+            fill="#CD2E3A"
+          >
+            <tspan fillOpacity="0">KOREA</tspan>
+            <tspan>.</tspan>
+            <tspan fillOpacity="0">GP</tspan>
+          </text>
+        </motion.svg>
       </div>
     </div>
   )
