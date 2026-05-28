@@ -5,19 +5,19 @@ const CarScene = lazy(() => import('../components/CarScene'))
 
 export default function Landing() {
   return (
-    <div className="relative h-screen w-screen overflow-hidden bg-[#0a0a0a] text-[#f5f3ef]">
+    <div className="relative h-screen w-screen overflow-hidden bg-[#f5f3ef] text-[#0a0a0a]">
       {/* subtle grid */}
       <div
-        className="pointer-events-none absolute inset-0 opacity-[0.05]"
+        className="pointer-events-none absolute inset-0 opacity-[0.06]"
         style={{
           backgroundImage:
-            'linear-gradient(to right, #fff 1px, transparent 1px), linear-gradient(to bottom, #fff 1px, transparent 1px)',
+            'linear-gradient(to right, #000 1px, transparent 1px), linear-gradient(to bottom, #000 1px, transparent 1px)',
           backgroundSize: '80px 80px',
         }}
       />
 
       {/* radial vignette */}
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_55%,transparent_0%,transparent_45%,rgba(0,0,0,0.78)_88%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_55%,transparent_0%,transparent_45%,rgba(255,255,255,0.85)_88%)]" />
 
       {/* 3D — cars orbiting behind the wordmark */}
       <div className="absolute inset-0 z-[1]">
