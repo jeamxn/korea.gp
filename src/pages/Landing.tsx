@@ -26,7 +26,7 @@ export default function Landing() {
         </Suspense>
       </div>
 
-      {/* CENTER WORDMARK — glass via CSS mask-image (reliable across browsers) */}
+      {/* CENTER WORDMARK — pure glass blur in the shape of KOREA.GP, no outline */}
       <div className="pointer-events-none absolute inset-0 z-[5] flex items-center justify-center px-6">
         <motion.div
           initial={{ opacity: 0, y: 24 }}
@@ -35,10 +35,6 @@ export default function Landing() {
           className="relative w-[92vw] md:w-[80vw]"
           style={{ aspectRatio: '1000 / 280' }}
         >
-          {/* Backdrop-blur layer, clipped to the letterforms.
-              Using Impact (universal system condensed font) because data:
-              SVG masks cannot load external fonts like Bebas Neue. The
-              overlay SVG below uses the same font so they align perfectly. */}
           <div
             className="absolute inset-0"
             style={{
@@ -57,42 +53,6 @@ export default function Landing() {
               maskPosition: 'center',
             }}
           />
-
-          {/* Outline + red dot, same font + same coords so they overlap exactly */}
-          <svg
-            viewBox="0 0 1000 280"
-            className="absolute inset-0 h-full w-full"
-            preserveAspectRatio="xMidYMid meet"
-          >
-            <text
-              x="500"
-              y="225"
-              textAnchor="middle"
-              fontFamily="Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif"
-              fontSize="260"
-              letterSpacing="-4"
-              fontWeight="400"
-              fill="none"
-              stroke="rgba(255,255,255,0.5)"
-              strokeWidth="1.4"
-            >
-              KOREA.GP
-            </text>
-            <text
-              x="500"
-              y="225"
-              textAnchor="middle"
-              fontFamily="Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif"
-              fontSize="260"
-              letterSpacing="-4"
-              fontWeight="400"
-              fill="#CD2E3A"
-            >
-              <tspan fillOpacity="0">KOREA</tspan>
-              <tspan>.</tspan>
-              <tspan fillOpacity="0">GP</tspan>
-            </text>
-          </svg>
         </motion.div>
       </div>
     </div>
