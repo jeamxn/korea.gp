@@ -35,17 +35,20 @@ export default function Landing() {
           className="relative w-[92vw] md:w-[80vw]"
           style={{ aspectRatio: '1000 / 280' }}
         >
-          {/* Backdrop-blur layer, clipped to the letterforms */}
+          {/* Backdrop-blur layer, clipped to the letterforms.
+              Using Impact (universal system condensed font) because data:
+              SVG masks cannot load external fonts like Bebas Neue. The
+              overlay SVG below uses the same font so they align perfectly. */}
           <div
             className="absolute inset-0"
             style={{
-              backdropFilter: 'blur(20px) saturate(1.4)',
-              WebkitBackdropFilter: 'blur(20px) saturate(1.4)',
-              background: 'rgba(255,255,255,0.06)',
+              backdropFilter: 'blur(22px) saturate(1.5)',
+              WebkitBackdropFilter: 'blur(22px) saturate(1.5)',
+              background: 'rgba(255,255,255,0.05)',
               WebkitMaskImage:
-                "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 280'><text x='500' y='232' text-anchor='middle' font-family='Bebas Neue, sans-serif' font-size='260' letter-spacing='-6' fill='white'>KOREA.GP</text></svg>\")",
+                "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 280'><text x='500' y='225' text-anchor='middle' font-family='Impact, Haettenschweiler, Arial Narrow Bold, sans-serif' font-size='260' letter-spacing='-4' font-weight='400' fill='white'>KOREA.GP</text></svg>\")",
               maskImage:
-                "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 280'><text x='500' y='232' text-anchor='middle' font-family='Bebas Neue, sans-serif' font-size='260' letter-spacing='-6' fill='white'>KOREA.GP</text></svg>\")",
+                "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 280'><text x='500' y='225' text-anchor='middle' font-family='Impact, Haettenschweiler, Arial Narrow Bold, sans-serif' font-size='260' letter-spacing='-4' font-weight='400' fill='white'>KOREA.GP</text></svg>\")",
               WebkitMaskSize: 'contain',
               maskSize: 'contain',
               WebkitMaskRepeat: 'no-repeat',
@@ -55,7 +58,7 @@ export default function Landing() {
             }}
           />
 
-          {/* Outline + red dot via SVG on top */}
+          {/* Outline + red dot, same font + same coords so they overlap exactly */}
           <svg
             viewBox="0 0 1000 280"
             className="absolute inset-0 h-full w-full"
@@ -63,24 +66,26 @@ export default function Landing() {
           >
             <text
               x="500"
-              y="232"
+              y="225"
               textAnchor="middle"
-              fontFamily="Bebas Neue, sans-serif"
+              fontFamily="Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif"
               fontSize="260"
-              letterSpacing="-6"
+              letterSpacing="-4"
+              fontWeight="400"
               fill="none"
-              stroke="rgba(255,255,255,0.45)"
-              strokeWidth="1.2"
+              stroke="rgba(255,255,255,0.5)"
+              strokeWidth="1.4"
             >
               KOREA.GP
             </text>
             <text
               x="500"
-              y="232"
+              y="225"
               textAnchor="middle"
-              fontFamily="Bebas Neue, sans-serif"
+              fontFamily="Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif"
               fontSize="260"
-              letterSpacing="-6"
+              letterSpacing="-4"
+              fontWeight="400"
               fill="#CD2E3A"
             >
               <tspan fillOpacity="0">KOREA</tspan>
