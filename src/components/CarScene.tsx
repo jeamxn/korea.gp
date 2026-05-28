@@ -6,19 +6,15 @@ import { TEAMS } from '../data/teams'
 
 TEAMS.forEach((t) => useGLTF.preload(t.glb))
 
-function OrbitingCar({
+function SpinningCar({
   url,
   scale,
   y,
-  radius,
-  phase,
   speed,
 }: {
   url: string
   scale: number
   y: number
-  radius: number
-  phase: number // 0..1 starting angle offset
   speed: number
 }) {
   const group = useRef<Group>(null)
@@ -26,18 +22,12 @@ function OrbitingCar({
   const { scene } = useGLTF(url)
 
   useFrame((state, dt) => {
-    const t = state.clock.elapsedTime * speed + phase * Math.PI * 2
     if (group.current) {
-      group.current.position.x = Math.sin(t) * radius
-      group.current.position.z = Math.cos(t) * radius
-      // Face direction of travel
-      group.current.rotation.y = t + Math.PI / 2
+      group.current.rotation.y += dt * speed
     }
     if (inner.current) {
-      // gentle bob
-      inner.current.position.y = Math.sin(state.clock.elapsedTime * 1.4 + phase * 6) * 0.04
+      inner.current.position.y = Math.sin(state.clock.elapsedTime * 1.4) * 0.04
     }
-    void dt
   })
 
   return (
@@ -48,6 +38,45 @@ function OrbitingCar({
     </group>
   )
 }
+
+// Kept for future use — orbits the centre on a circle.
+// function OrbitingCar({
+//   url,
+//   scale,
+//   y,
+//   radius,
+//   phase,
+//   speed,
+// }: {
+//   url: string
+//   scale: number
+//   y: number
+//   radius: number
+//   phase: number
+//   speed: number
+// }) {
+//   const group = useRef<Group>(null)
+//   const inner = useRef<Group>(null)
+//   const { scene } = useGLTF(url)
+//   useFrame((state) => {
+//     const t = state.clock.elapsedTime * speed + phase * Math.PI * 2
+//     if (group.current) {
+//       group.current.position.x = Math.sin(t) * radius
+//       group.current.position.z = Math.cos(t) * radius
+//       group.current.rotation.y = t + Math.PI / 2
+//     }
+//     if (inner.current) {
+//       inner.current.position.y = Math.sin(state.clock.elapsedTime * 1.4 + phase * 6) * 0.04
+//     }
+//   })
+//   return (
+//     <group ref={group}>
+//       <group ref={inner}>
+//         <primitive object={scene} scale={scale} position={[0, y, 0]} />
+//       </group>
+//     </group>
+//   )
+// }
 
 export default function CarScene() {
   return (
@@ -78,22 +107,20 @@ export default function CarScene() {
 
       <Suspense fallback={null}>
         <Float speed={1.0} rotationIntensity={0} floatIntensity={0.1}>
-          <OrbitingCar
+          {/* Ferrari — spins in place at centre */}
+          <SpinningCar
             url={TEAMS[0].glb}
             scale={TEAMS[0].baseScale}
             y={TEAMS[0].baseY}
-            radius={3.4}
-            phase={0}
             speed={0.35}
           />
-          <OrbitingCar
+          {/* Mercedes — disabled for now, keep for later */}
+          {/* <SpinningCar
             url={TEAMS[1].glb}
             scale={TEAMS[1].baseScale}
             y={TEAMS[1].baseY}
-            radius={3.4}
-            phase={0.5}
             speed={0.35}
-          />
+          /> */}
         </Float>
 
         <ContactShadows
