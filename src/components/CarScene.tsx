@@ -27,12 +27,18 @@ function SpinningCar({
     const found: Object3D[] = []
     scene.traverse((o) => {
       const n = (o.name || '').toLowerCase()
-      if (n.includes('tyre') || n.includes('tire') || n.includes('wheel')) {
-        // Only keep top-level group nodes (avoid double-spinning child meshes)
-        // Heuristic: name has no underscore-suffix like "_Formula"
-        if (!n.includes('_formula') && !n.includes('object_')) {
-          found.push(o)
-        }
+      // Matches: tyre/tire/wheel (English), däck (Swedish — filipbagen/f1 model)
+      const isWheelName =
+        n.includes('tyre') || n.includes('tire') || n.includes('wheel') || n.includes('däck') || n.includes('dack')
+      // Exclude obvious child meshes / hardware
+      const isExcluded =
+        n.includes('_formula') ||
+        n.includes('object_') ||
+        n.includes('mutter') || // bolt/nut
+        n.includes('märke') ||  // brand mark sticker
+        n.includes('marke')
+      if (isWheelName && !isExcluded) {
+        found.push(o)
       }
     })
     wheels.current = found
