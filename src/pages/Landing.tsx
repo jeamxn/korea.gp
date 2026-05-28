@@ -38,8 +38,8 @@ export default function Landing() {
           <div
             className="absolute inset-0"
             style={{
-              backdropFilter: 'invert(1)',
-              WebkitBackdropFilter: 'invert(1)',
+              backdropFilter: 'invert(1) hue-rotate(180deg)',
+              WebkitBackdropFilter: 'invert(1) hue-rotate(180deg)',
               WebkitMaskImage:
                 "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 280'><text x='500' y='225' text-anchor='middle' font-family='Impact, Haettenschweiler, Arial Narrow Bold, sans-serif' font-size='260' letter-spacing='-4' font-weight='400' fill='white'>KOREA.GP</text></svg>\")",
               maskImage:
