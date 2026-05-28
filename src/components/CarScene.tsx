@@ -1,10 +1,23 @@
 import { Suspense, useEffect, useRef } from 'react'
-import { Canvas, useFrame } from '@react-three/fiber'
+import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { Environment, useGLTF, ContactShadows, Float } from '@react-three/drei'
 import type { Group, Object3D } from 'three'
 import { TEAMS } from '../data/teams'
 
 TEAMS.forEach((t) => useGLTF.preload(t.glb))
+
+// Match the wordmark's width-driven sizing:
+// wordmark is 92vw (mobile) / 80vw (md+). We mirror that with a responsive
+// scale factor derived from viewport width so the car visually tracks the
+// letterforms instead of staying a fixed size.
+function useResponsiveScale() {
+  const size = useThree((s) => s.size)
+  // Reference: at ~1440px viewport width the base scale matches the GLB's
+  // tuned baseScale (1.0×). Below/above we scale linearly with a clamp.
+  const ref = 1440
+  const raw = size.width / ref
+  return Math.max(0.55, Math.min(1.35, raw))
+}
 
 function SpinningCar({
   url,
@@ -21,6 +34,7 @@ function SpinningCar({
   const inner = useRef<Group>(null)
   const wheels = useRef<Object3D[]>([])
   const { scene } = useGLTF(url)
+  const responsive = useResponsiveScale()
 
   // Collect wheel nodes once per scene change
   useEffect(() => {
@@ -59,7 +73,7 @@ function SpinningCar({
   })
 
   return (
-    <group ref={group}>
+    <group ref={group} scale={responsive}>
       <group ref={inner}>
         <primitive object={scene} scale={scale} position={[0, y, 0]} />
       </group>
