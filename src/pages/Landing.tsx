@@ -32,15 +32,9 @@ export default function Landing() {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1.1, delay: 0.15 }}
-          className="text-center font-['Bebas_Neue'] leading-[0.82] tracking-tight"
+          className="text-center font-['Bebas_Neue'] leading-[0.82] tracking-tight text-[28vw] md:text-[22vw]"
         >
-          <span className="block text-[16vw] md:text-[12vw]">FORMULA 1</span>
-          <span
-            className="block text-[24vw] md:text-[18vw]"
-            style={{ color: '#CD2E3A' }}
-          >
-            KOREA
-          </span>
+          KOREA<span style={{ color: '#CD2E3A' }}>.</span>GP
         </motion.h1>
       </div>
     </div>
