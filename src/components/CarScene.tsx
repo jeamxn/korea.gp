@@ -1,7 +1,7 @@
-import { Suspense, useRef } from 'react'
+import { Suspense, useEffect, useRef } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { Environment, useGLTF, ContactShadows, Float } from '@react-three/drei'
-import type { Group } from 'three'
+import type { Group, Object3D } from 'three'
 import { TEAMS } from '../data/teams'
 
 TEAMS.forEach((t) => useGLTF.preload(t.glb))
@@ -19,7 +19,24 @@ function SpinningCar({
 }) {
   const group = useRef<Group>(null)
   const inner = useRef<Group>(null)
+  const wheels = useRef<Object3D[]>([])
   const { scene } = useGLTF(url)
+
+  // Collect wheel nodes once per scene change
+  useEffect(() => {
+    const found: Object3D[] = []
+    scene.traverse((o) => {
+      const n = (o.name || '').toLowerCase()
+      if (n.includes('tyre') || n.includes('tire') || n.includes('wheel')) {
+        // Only keep top-level group nodes (avoid double-spinning child meshes)
+        // Heuristic: name has no underscore-suffix like "_Formula"
+        if (!n.includes('_formula') && !n.includes('object_')) {
+          found.push(o)
+        }
+      }
+    })
+    wheels.current = found
+  }, [scene])
 
   useFrame((state, dt) => {
     if (group.current) {
@@ -27,6 +44,11 @@ function SpinningCar({
     }
     if (inner.current) {
       inner.current.position.y = Math.sin(state.clock.elapsedTime * 1.4) * 0.04
+    }
+    // Spin wheels — wheel local X axis (cars rolling forward)
+    const wheelSpeed = 8
+    for (const w of wheels.current) {
+      w.rotation.x += dt * wheelSpeed
     }
   })
 

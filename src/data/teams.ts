@@ -16,7 +16,7 @@ export const TEAMS: Team[] = [
     name: 'Scuderia Ferrari',
     color: '#DC0000',
     colorRgb: '220,0,0',
-    glb: `${BASE}/ferrari.glb`,
+    glb: 'https://cdn.jsdelivr.net/gh/aravindvjn/RedBull-3D-com@main/public/models/red_bull_racing_but_with_detached_tyres.glb',
     baseScale: 1.0,
     baseY: -0.55,
   },
